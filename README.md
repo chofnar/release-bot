@@ -1,5 +1,6 @@
 [![Go Version](https://img.shields.io/github/go-mod/go-version/chofnar/release-bot?logo=go)](go.mod)
 [![Telegram Chat](https://img.shields.io/static/v1?label=Bot&message=chat&color=29a1d4&logo=telegram)](https://t.me/prgitrelbot)
+[![Go Report](https://img.shields.io/badge/Go%20Report-A+-brightgreen.svg?style=flat)](https://goreportcard.com/report/github.com/chofnar/release-bot)
 
 # release-bot - a telegram bot for Github releases
 
