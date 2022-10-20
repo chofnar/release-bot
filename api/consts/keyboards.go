@@ -8,13 +8,13 @@ import (
 var StartKeyboard *telego.InlineKeyboardMarkup = tu.InlineKeyboard(
 	tu.InlineKeyboardRow(
 		telego.InlineKeyboardButton{
-			Text: SeeAllReposMessage,
+			Text:         SeeAllReposMessage,
 			CallbackData: SeeAllCallback,
 		},
 	),
 	tu.InlineKeyboardRow(
 		telego.InlineKeyboardButton{
-			Text: AddRepoMessage,
+			Text:         AddRepoMessage,
 			CallbackData: AddCallback,
 		},
 	),

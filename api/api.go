@@ -32,6 +32,9 @@ func main() {
 	updates, _ := bot.UpdatesViaWebhook("/bot/" + token)
 
 	err = bot.StartListeningForWebhook("0.0.0.0" + ":" + port)
+	if err != nil {
+		panic(err)
+	}
 
 	defer func() {
 		_ = bot.StopWebhook()
@@ -49,7 +52,7 @@ func main() {
 			case "/about":
 				bot.SendMessage(messages.AboutMessage(chatID))
 
-			default: 
+			default:
 				bot.SendMessage(messages.UnknownCommandMessage(chatID))
 				bot.SendMessage(messages.StartMessage(chatID))
 			}
