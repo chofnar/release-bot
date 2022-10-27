@@ -4,7 +4,7 @@ import (
 	"github.com/chofnar/release-bot/api/repo"
 )
 
-type database interface {
+type Database interface {
 	GetRepos(chatID string) error
 	AddRepo(chatID, repoPath string) error
 	RemoveRepo(chatID, nameHash string) error

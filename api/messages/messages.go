@@ -19,10 +19,30 @@ func UnknownCommandMessage(chatID int64) *telego.SendMessageParams {
 	return tu.Message(tu.ID(chatID), consts.UnknownCommandMessage)
 }
 
-func SeeAllReposMessage(chatID int64) *telego.SendMessageParams {
-	return tu.Message(tu.ID(chatID), consts.UnknownCommandMessage)
+func SeeAllReposMessage(chatID int64, messageID int) *telego.EditMessageTextParams {
+	return &telego.EditMessageTextParams{
+		ChatID: tu.ID(chatID),
+		MessageID: int(messageID),
+		Text: consts.ShowingAllReposMessage,
+	}
 }
 
-func AddRepoMessage(chatID int64) *telego.SendMessageParams {
-	return tu.Message(tu.ID(chatID), consts.UnknownCommandMessage)
+func SeeAllReposMarkup(chatID int64, messageID int) *telego.EditMessageReplyMarkupParams {
+	return &telego.EditMessageReplyMarkupParams{
+
+	}
+}
+
+func AddRepoMessage(chatID int64, messageID int) *telego.EditMessageTextParams {
+	return &telego.EditMessageTextParams{
+		ChatID: tu.ID(chatID),
+		MessageID: int(messageID),
+		Text: consts.ShowingAddRepoMessage,
+	}
+}
+
+func AddRepoMarkup(chatID int64, messageID int) *telego.EditMessageReplyMarkupParams {
+	return &telego.EditMessageReplyMarkupParams{
+		
+	}
 }

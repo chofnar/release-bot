@@ -3,35 +3,48 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 
+	botConfig "github.com/chofnar/release-bot/api/config"
+	"github.com/chofnar/release-bot/database"
+	databaseLoader "github.com/chofnar/release-bot/database/loader"
 	"github.com/chofnar/release-bot/api/consts"
 	"github.com/chofnar/release-bot/api/messages"
 	"github.com/mymmrac/telego"
+
+	"go.uber.org/zap"
 )
 
-func main() {
-	token := os.Getenv("TELEGRAM_BOT_TOKEN")
-	site := os.Getenv("TELEGRAM_BOT_SITE_URL")
-	port := os.Getenv("TELEGRAM_BOT_PORT")
+func Initialize(logger zap.SugaredLogger) (*botConfig.BotConfig, *database.Database) {
+	conf := botConfig.LoadBotConfig()
+	db := databaseLoader.GetDatabase(logger)
+	return conf, db
+}
 
-	bot, err := telego.NewBot(token, telego.WithDefaultDebugLogger())
+func main() {
+	unsugared, err := zap.NewProduction()
+    if err != nil {
+        log.Fatal(err)
+    }
+    logger := unsugared.Sugar()
+	botConf, _ := Initialize(*logger)
+
+	bot, err := telego.NewBot(botConf.Token, telego.WithDefaultDebugLogger())
 	if err != nil {
-		log.Println(err)
+		logger.Error(err)
 
 		panic(err)
 	}
 
 	_ = bot.SetWebhook(&telego.SetWebhookParams{
-		URL: "https://" + site + ":443" + "/bot/" + token,
+		URL: "https://" + botConf.WebhookSite + ":443" + "/bot/" + botConf.Token,
 	})
 
 	info, _ := bot.GetWebhookInfo()
 	fmt.Printf("Webhook info: %+v\n", info)
 
-	updates, _ := bot.UpdatesViaWebhook("/bot/" + token)
+	updates, _ := bot.UpdatesViaWebhook("/bot/" + botConf.Token)
 
-	err = bot.StartListeningForWebhook("0.0.0.0" + ":" + port)
+	err = bot.StartListeningForWebhook("0.0.0.0" + ":" + botConf.Port)
 	if err != nil {
 		panic(err)
 	}
@@ -43,30 +56,58 @@ func main() {
 	for update := range updates {
 		fmt.Printf("Update: %+v\n", update)
 		chatID := update.Message.Chat.ID
+		messageID := update.Message.MessageID
+		var err error
+		
 		// command
 		if update.Message.Text != "" {
 			switch update.Message.Text {
 			case "/start":
-				bot.SendMessage(messages.StartMessage(chatID))
+				_, err = bot.SendMessage(messages.StartMessage(chatID))
+				if err != nil {
+					logger.Error(err)
+				}
 
 			case "/about":
-				bot.SendMessage(messages.AboutMessage(chatID))
-
+				_, err = bot.SendMessage(messages.AboutMessage(chatID))
+				if err != nil {
+					logger.Error(err)
+				}
+				
 			default:
-				bot.SendMessage(messages.UnknownCommandMessage(chatID))
-				bot.SendMessage(messages.StartMessage(chatID))
+				_, err = bot.SendMessage(messages.UnknownCommandMessage(chatID))
+				if err != nil {
+					logger.Error(err)
+				}
+
+				_, err = bot.SendMessage(messages.StartMessage(chatID))
+				if err != nil {
+					logger.Error(err)
+				}
 			}
 		} else {
 			switch update.CallbackQuery.Data {
 			case consts.SeeAllCallback:
-				//bot.EditMessageText()
-				//bot.EditMessageReplyMarkup()
-				bot.SendMessage(messages.SeeAllReposMessage(chatID))
+				_, err = bot.EditMessageText(messages.SeeAllReposMessage(chatID, messageID))
+				if err != nil {
+					logger.Error(err)
+				}
+				
+				_, err = bot.EditMessageReplyMarkup(messages.AddRepoMarkup(chatID, messageID))
+				if err != nil {
+					logger.Error(err)
+				}
 
 			case consts.AddCallback:
-				//bot.EditMessageText()
-				//bot.EditMessageReplyMarkup()
-				bot.SendMessage(messages.AddRepoMessage(chatID))
+				_, err = bot.EditMessageText(messages.AddRepoMessage(chatID, messageID))
+				if err != nil {
+					logger.Error(err)
+				}
+
+				_, err = bot.EditMessageReplyMarkup(messages.AddRepoMarkup(chatID, messageID))
+				if err != nil {
+					logger.Error(err)
+				}
 
 			default:
 				break
