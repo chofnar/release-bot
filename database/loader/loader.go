@@ -7,7 +7,6 @@ import (
 	"go.uber.org/zap"
 )
 
-func GetDatabase(logger zap.SugaredLogger) *database.Database {
-	factory.Create("dynamodb", nil, logger)
-	return nil
+func GetDatabase(logger zap.SugaredLogger) database.Database {
+	return factory.Create("dynamodb", logger)
 }

@@ -5,9 +5,9 @@ import (
 )
 
 type Database interface {
-	GetRepos(chatID string) error
-	AddRepo(chatID, repoPath string) error
+	GetRepos(chatID string) ([]repo.Repo, error)
+	AddRepo(chatID, details *repo.Repo) error
 	RemoveRepo(chatID, nameHash string) error
-	AllRepos() (*[]repo.Repo, error)
+	AllRepos() (*[]repo.HelperRepo, error)
 	UpdateEntry(chatID, nameHash, newTagName string) error
 }

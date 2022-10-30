@@ -14,4 +14,6 @@ const (
 	ShowingAddRepoMessage = "Send a message containing your repo in one of the following formats: user/repo, https://github.com/user/repo"
 
 	ShowingAllReposMessage = "Here's all your added repos with their releases"
+
+	DelteRepoEmoji = "🗑️"
 )
