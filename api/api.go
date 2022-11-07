@@ -1,11 +1,9 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"regexp"
 	"strings"
 
@@ -15,9 +13,10 @@ import (
 	"github.com/chofnar/release-bot/api/repo"
 	"github.com/chofnar/release-bot/database"
 	databaseLoader "github.com/chofnar/release-bot/database/loader"
+	"github.com/hasura/go-graphql-client"
 	"github.com/mymmrac/telego"
-
 	"go.uber.org/zap"
+	"golang.org/x/oauth2"
 )
 
 func Initialize(logger zap.SugaredLogger) (*botConfig.BotConfig, database.Database) {
@@ -41,7 +40,7 @@ func main() {
 	linkRegex, _ := regexp.Compile("(?:https://)github.com[:/](.*)[:/](.*)")
 	directRegex, _ := regexp.Compile("(.*)[/](.*)")
 
-	bot, err := telego.NewBot(botConf.Token, telego.WithDefaultDebugLogger())
+	bot, err := telego.NewBot(botConf.TelegramToken, telego.WithDefaultDebugLogger())
 	if err != nil {
 		logger.Error(err)
 
@@ -49,13 +48,13 @@ func main() {
 	}
 
 	_ = bot.SetWebhook(&telego.SetWebhookParams{
-		URL: "https://" + botConf.WebhookSite + ":443" + "/bot/" + botConf.Token,
+		URL: "https://" + botConf.WebhookSite + ":443" + "/bot/" + botConf.TelegramToken,
 	})
 
 	info, _ := bot.GetWebhookInfo()
 	fmt.Printf("Webhook info: %+v\n", info)
 
-	updates, _ := bot.UpdatesViaWebhook("/bot/" + botConf.Token)
+	updates, _ := bot.UpdatesViaWebhook("/bot/" + botConf.TelegramToken)
 
 	err = bot.StartListeningForWebhook("0.0.0.0" + ":" + botConf.Port)
 	if err != nil {
@@ -65,6 +64,14 @@ func main() {
 	defer func() {
 		_ = bot.StopWebhook()
 	}()
+
+	// Create Github GraphQL token
+	src := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: botConf.GithubGQLToken},
+	)
+
+	httpClient := oauth2.NewClient(context.Background(), src)
+	githubGQLClient := graphql.NewClient("https://api.github.com/graphql", httpClient)
 
 	for update := range updates {
 		var err error
@@ -79,12 +86,14 @@ func main() {
 				if err != nil {
 					logger.Error(err)
 				}
+				// TODO: handle this, user visible: backend
 
 			case "/about":
 				_, err = bot.SendMessage(messages.AboutMessage(chatID))
 				if err != nil {
 					logger.Error(err)
 				}
+				// TODO: handle this, user visible: backend
 
 			default:
 				if _, ok := awaitingAddRepo[chatID]; !ok {
@@ -92,25 +101,33 @@ func main() {
 					if err != nil {
 						logger.Error(err)
 					}
+					// TODO: handle this, user visible: backend
 
 					_, err = bot.SendMessage(messages.StartMessage(chatID))
 					if err != nil {
 						logger.Error(err)
 					}
 				} else {
-					// TODO: input validation, add to db
 					owner, repoName, valid := validateInput(update.Message.Text, linkRegex, directRegex)
 					if valid {
-						_, err = validateAndBuildRepo(owner, repoName)
+						repoToAdd, err := validateAndBuildRepo(owner, repoName, githubGQLClient)
 						if err != nil {
 							logger.Error(err)
 							// TODO: invalid repo
 						}
-						err = db.AddRepo(nil, nil)
+						// TODO: check if exists before pushing
+						err = db.AddRepo(fmt.Sprint(chatID), &repoToAdd)
 						if err != nil {
 							logger.Error(err)
-							// TODO: warn that something went wrong
 						}
+						// TODO: handle this, user visible: backend
+
+						_, err = bot.SendMessage(messages.SuccesfullyAddedRepoMessage(chatID, update.Message.MessageID))
+						if err != nil {
+							logger.Error(err)
+						}
+						// TODO: handle this, user visible: backend
+
 					} else {
 						// TODO: implement
 						break
@@ -123,6 +140,7 @@ func main() {
 
 			switch update.CallbackQuery.Data {
 			case consts.SeeAllCallback:
+				// TODO: message for when there are no repos to show
 				_, err = bot.EditMessageText(messages.SeeAllReposMessage(chatID, messageID))
 				if err != nil {
 					logger.Error(err)
@@ -144,12 +162,13 @@ func main() {
 					logger.Error(err)
 				}
 
-				_, err = bot.EditMessageReplyMarkup(messages.AddRepoMarkup(chatID, messageID))
+				awaitingAddRepo[chatID] = set
+
+			case consts.MenuCallback:
+				_, err = bot.EditMessageText(messages.EditedStartMessage(chatID, messageID))
 				if err != nil {
 					logger.Error(err)
 				}
-
-				awaitingAddRepo[chatID] = set
 
 			// name hash callback, delete
 			default:
@@ -189,21 +208,42 @@ func validateInput(message string, linkRegex, directRegex *regexp.Regexp) (owner
 	return
 }
 
-// TODO: replace with GraphQL
-func validateAndBuildRepo(owner, name string) (repo.Repo, error) {
-	resp, err := http.Get("https://api.github.com/repos/" + owner + "/" + name + "/releases")
+func validateAndBuildRepo(owner, name string, client *graphql.Client) (repo.Repo, error) {
+	variables := map[string]interface{}{
+		"name":  name,
+		"owner": owner,
+	}
+
+	var getRepoQuery struct {
+		Repository struct {
+			ID    string
+			URL   string
+			Name  string
+			Owner struct {
+				Login string
+			}
+			Releases struct {
+				Nodes []struct {
+					TagName string
+					ID      string
+				}
+			} `graphql:"releases(first: 1)"`
+		} `graphql:"repository(name: $name, owner: $owner)"`
+	}
+
+	err := client.Query(context.TODO(), &getRepoQuery, variables)
 	if err != nil {
 		return repo.Repo{}, err
 	}
 
-	resultingRepo := repo.HelperRepo{}
-	bodyBytes, _ := io.ReadAll(resp.Body)
-	fmt.Print(string(bodyBytes))
-
-	err = json.NewDecoder(resp.Body).Decode(&resultingRepo)
-	if err != nil {
-		return repo.Repo{}, err
-	}
-
-	return repo.Repo{}, nil
+	return repo.Repo{
+		RepoID: getRepoQuery.Repository.ID,
+		Name:   getRepoQuery.Repository.Name,
+		Owner:  getRepoQuery.Repository.Owner.Login,
+		Link:   getRepoQuery.Repository.URL,
+		Release: repo.Release{
+			CurrentReleaseTagName: getRepoQuery.Repository.Releases.Nodes[0].TagName,
+			CurrentReleaseID:      getRepoQuery.Repository.Releases.Nodes[0].ID,
+		},
+	}, nil
 }

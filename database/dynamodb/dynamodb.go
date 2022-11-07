@@ -2,8 +2,6 @@ package dynamodb
 
 import (
 	"context"
-	"encoding/json"
-	"net/http"
 	"os"
 
 	"github.com/chofnar/release-bot/api/repo"
@@ -117,29 +115,34 @@ func (db *Driver) GetRepos(chatID string) ([]repo.Repo, error) {
 	return repos, nil
 }
 
-func (db *Driver) AddRepo(chatID, details *repo.Repo) error {
-	resp, err := http.Get("https://api.github.com/repos/" + details.Owner + "/" + details.Name + "/releases")
+func (db *Driver) AddRepo(chatID string, details *repo.Repo) error {
+	// TODO: Contexts, mate
+	_, err := db.client.PutItem(context.TODO(), &dynamodb.PutItemInput{
+		TableName: &db.tableName,
+		Item: map[string]types.AttributeValue{
+			"chatID":                &types.AttributeValueMemberS{Value: chatID},
+			"repoID":                &types.AttributeValueMemberS{Value: details.RepoID},
+			"repoName":              &types.AttributeValueMemberS{Value: details.Name},
+			"repoOwner":             &types.AttributeValueMemberS{Value: details.Owner},
+			"repoLink":              &types.AttributeValueMemberS{Value: details.Link},
+			"currentReleaseTagName": &types.AttributeValueMemberS{Value: details.Release.CurrentReleaseTagName},
+			"currentReleaseID":      &types.AttributeValueMemberS{Value: details.Release.CurrentReleaseID},
+		},
+	})
 	if err != nil {
 		return err
 	}
-	resultingRepo := repo.HelperRepo{}
-
-	err = json.NewDecoder(resp.Body).Decode(&resultingRepo)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func (db *Driver) RemoveRepo(chatID, nameHash string) error {
+func (db *Driver) RemoveRepo(chatID, repoID string) error {
 	_, err := db.client.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
 		Key: map[string]types.AttributeValue{
 			"chatID": &types.AttributeValueMemberS{
 				Value: chatID,
 			},
-			"nameHash": &types.AttributeValueMemberS{
-				Value: nameHash,
+			"repoID": &types.AttributeValueMemberS{
+				Value: repoID,
 			},
 		},
 		TableName: &db.tableName,
@@ -148,10 +151,10 @@ func (db *Driver) RemoveRepo(chatID, nameHash string) error {
 	return err
 }
 
-func (db *Driver) AllRepos() (*[]repo.HelperRepo, error) {
+func (db *Driver) AllRepos() (*[]repo.Repo, error) {
 	return nil, nil
 }
 
-func (db *Driver) UpdateEntry(chatID, nameHash, newTagName string) error {
+func (db *Driver) UpdateEntry(chatID, repoID, newTagName string) error {
 	return nil
 }

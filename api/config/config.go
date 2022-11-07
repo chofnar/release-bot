@@ -5,18 +5,19 @@ import (
 )
 
 type BotConfig struct {
-	Token, WebhookSite, Port string
+	TelegramToken, WebhookSite, Port, GithubGQLToken string
 }
 
-func LoadBotConfig() (*BotConfig) {
+func LoadBotConfig() *BotConfig {
 	if os.Getenv("FROM_FILE") == "1" {
-		// TODO: implement 
+		// TODO: implement
 		return nil
 	} else {
 		return &BotConfig{
-			Token: os.Getenv("TELEGRAM_BOT_TOKEN"),
-			WebhookSite: os.Getenv("TELEGRAM_BOT_SITE_URL"),
-			Port: os.Getenv("TELEGRAM_BOT_PORT"),
+			TelegramToken:  os.Getenv("TELEGRAM_BOT_TOKEN"),
+			WebhookSite:    os.Getenv("TELEGRAM_BOT_SITE_URL"),
+			Port:           os.Getenv("TELEGRAM_BOT_PORT"),
+			GithubGQLToken: os.Getenv("GITHUB_GQL_TOKEN"),
 		}
 	}
 }

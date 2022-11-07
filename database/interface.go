@@ -6,8 +6,8 @@ import (
 
 type Database interface {
 	GetRepos(chatID string) ([]repo.Repo, error)
-	AddRepo(chatID, details *repo.Repo) error
-	RemoveRepo(chatID, nameHash string) error
-	AllRepos() (*[]repo.HelperRepo, error)
-	UpdateEntry(chatID, nameHash, newTagName string) error
+	AddRepo(chatID string, details *repo.Repo) error
+	RemoveRepo(chatID, repoID string) error
+	AllRepos() (*[]repo.Repo, error)
+	UpdateEntry(chatID, repoID, newTagName string) error
 }

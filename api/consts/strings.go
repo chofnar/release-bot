@@ -16,4 +16,11 @@ const (
 	ShowingAllReposMessage = "Here's all your added repos with their releases"
 
 	DelteRepoEmoji = "🗑️"
+
+	// Very creative
+	Yes = "Yes"
+
+	No = "No"
+
+	AddedRepoSuccesfully = "Repo added succesfully. Add another?"
 )

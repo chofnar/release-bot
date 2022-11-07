@@ -11,10 +11,10 @@ var driverFactories = map[string]DriverFactory{
 }
 
 type DriverFactory interface {
-	Create(logger zap.SugaredLogger) (database.Database)
+	Create(logger zap.SugaredLogger) database.Database
 }
 
-func Create(dbtype string, logger zap.SugaredLogger) (database.Database) {
+func Create(dbtype string, logger zap.SugaredLogger) database.Database {
 	driverFactory, ok := driverFactories[dbtype]
 	if !ok {
 		return nil

@@ -19,3 +19,16 @@ var StartKeyboard *telego.InlineKeyboardMarkup = tu.InlineKeyboard(
 		},
 	),
 )
+
+var AddAnotherRepoKeyboard *telego.InlineKeyboardMarkup = tu.InlineKeyboard(
+	tu.InlineKeyboardRow(
+		telego.InlineKeyboardButton{
+			Text:         Yes,
+			CallbackData: AddCallback,
+		},
+		telego.InlineKeyboardButton{
+			Text:         No,
+			CallbackData: MenuCallback,
+		},
+	),
+)
