@@ -4,7 +4,8 @@ go 1.19
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.17.1
-	github.com/mymmrac/telego v0.17.0
+	github.com/hasura/go-graphql-client v0.8.1
+	github.com/mymmrac/telego v0.17.1
 )
 
 require (
@@ -23,7 +24,6 @@ require (
 	github.com/aws/smithy-go v1.13.4 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/hasura/go-graphql-client v0.8.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
@@ -39,7 +39,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.17.10
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.2
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.17.3
-	github.com/fasthttp/router v1.4.12 // indirect
+	github.com/fasthttp/router v1.4.13 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
