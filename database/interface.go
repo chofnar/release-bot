@@ -10,4 +10,5 @@ type Database interface {
 	RemoveRepo(chatID, repoID string) error
 	AllRepos() (*[]repo.Repo, error)
 	UpdateEntry(chatID, repoID, newTagName string) error
+	CheckExisting(chatID, repoID string) (bool, error)
 }

@@ -4,15 +4,14 @@ import (
 	"context"
 	"os"
 
-	"github.com/chofnar/release-bot/api/repo"
-	"github.com/chofnar/release-bot/database"
-	"github.com/chofnar/release-bot/errors"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/chofnar/release-bot/api/repo"
+	"github.com/chofnar/release-bot/database"
+	"github.com/chofnar/release-bot/errors"
 	"go.uber.org/zap"
 )
 
@@ -152,9 +151,44 @@ func (db *Driver) RemoveRepo(chatID, repoID string) error {
 }
 
 func (db *Driver) AllRepos() (*[]repo.Repo, error) {
-	return nil, nil
+	// TODO: may need to implement pagination
+	result, err := db.client.Scan(context.TODO(), &dynamodb.ScanInput{
+		TableName: &db.tableName,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	repos := make([]repo.Repo, len(result.Items))
+
+	err = attributevalue.UnmarshalListOfMaps(result.Items, &repos)
+	if err != nil {
+		return nil, err
+	}
+
+	return &repos, nil
 }
 
 func (db *Driver) UpdateEntry(chatID, repoID, newTagName string) error {
 	return nil
+}
+
+func (db *Driver) CheckExisting(chatID, repoID string) (bool, error) {
+	output, err := db.client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+		TableName: &db.tableName,
+		Key: map[string]types.AttributeValue{
+			"chatID": &types.AttributeValueMemberS{Value: chatID},
+			"repoID": &types.AttributeValueMemberS{Value: repoID},
+		},
+	})
+	if err != nil {
+		return false, err
+	}
+
+	if output.Item != nil {
+		return true, nil
+	}
+
+	return false, nil
 }

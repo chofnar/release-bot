@@ -5,7 +5,6 @@ import (
 
 	"github.com/chofnar/release-bot/api/consts"
 	"github.com/chofnar/release-bot/database"
-
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 )
@@ -89,10 +88,42 @@ func AddRepoMessage(chatID int64, messageID int) *telego.EditMessageTextParams {
 	}
 }
 
-func SuccesfullyAddedRepoMessage(chatID int64, messageID int) *telego.SendMessageParams {
+func InvalidRepoMessage(chatID int64) *telego.SendMessageParams {
+	return &telego.SendMessageParams{
+		ChatID:      tu.ID(chatID),
+		Text:        consts.InvalidRepoMessage,
+		ReplyMarkup: nil,
+	}
+}
+
+func SuccesfullyAddedRepoMessage(chatID int64) *telego.SendMessageParams {
 	return &telego.SendMessageParams{
 		ChatID:      tu.ID(chatID),
 		Text:        consts.AddedRepoSuccesfully,
+		ReplyMarkup: consts.AddAnotherRepoKeyboard,
+	}
+}
+
+func SuccesfullyAddedRepoWithoutReleasesMessage(chatID int64) *telego.SendMessageParams {
+	return &telego.SendMessageParams{
+		ChatID:      tu.ID(chatID),
+		Text:        consts.AddedRepoSuccesfullyNoReleases,
+		ReplyMarkup: consts.AddAnotherRepoKeyboard,
+	}
+}
+
+func AlreadyExistsMessage(chatID int64, messageID int) *telego.SendMessageParams {
+	return &telego.SendMessageParams{
+		ChatID:      tu.ID(chatID),
+		Text:        consts.RepoExists,
+		ReplyMarkup: consts.AddAnotherRepoKeyboard,
+	}
+}
+
+func RepoNotFoundMessage(chatID int64) *telego.SendMessageParams {
+	return &telego.SendMessageParams{
+		ChatID:      tu.ID(chatID),
+		Text:        consts.RepoNotFound,
 		ReplyMarkup: consts.AddAnotherRepoKeyboard,
 	}
 }

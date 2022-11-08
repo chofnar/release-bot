@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"regexp"
 	"strings"
 
@@ -13,6 +15,7 @@ import (
 	"github.com/chofnar/release-bot/api/repo"
 	"github.com/chofnar/release-bot/database"
 	databaseLoader "github.com/chofnar/release-bot/database/loader"
+	"github.com/chofnar/release-bot/errors"
 	"github.com/hasura/go-graphql-client"
 	"github.com/mymmrac/telego"
 	"go.uber.org/zap"
@@ -70,6 +73,11 @@ func main() {
 		&oauth2.Token{AccessToken: botConf.GithubGQLToken},
 	)
 
+	// updater listener, called from cron from App Engine
+	// TODO: implement the cron
+	http.HandleFunc("/hello", updateRepos)
+	go http.ListenAndServe(":80", nil)
+
 	httpClient := oauth2.NewClient(context.Background(), src)
 	githubGQLClient := graphql.NewClient("https://api.github.com/graphql", httpClient)
 
@@ -86,14 +94,12 @@ func main() {
 				if err != nil {
 					logger.Error(err)
 				}
-				// TODO: handle this, user visible: backend
 
 			case "/about":
 				_, err = bot.SendMessage(messages.AboutMessage(chatID))
 				if err != nil {
 					logger.Error(err)
 				}
-				// TODO: handle this, user visible: backend
 
 			default:
 				if _, ok := awaitingAddRepo[chatID]; !ok {
@@ -101,7 +107,6 @@ func main() {
 					if err != nil {
 						logger.Error(err)
 					}
-					// TODO: handle this, user visible: backend
 
 					_, err = bot.SendMessage(messages.StartMessage(chatID))
 					if err != nil {
@@ -111,26 +116,58 @@ func main() {
 					owner, repoName, valid := validateInput(update.Message.Text, linkRegex, directRegex)
 					if valid {
 						repoToAdd, err := validateAndBuildRepo(owner, repoName, githubGQLClient)
+						hasReleases := true
 						if err != nil {
-							logger.Error(err)
-							// TODO: invalid repo
+							if err == errors.ErrNoReleases {
+								hasReleases = false
+
+							} else {
+								logger.Error(err)
+
+								_, err = bot.SendMessage(messages.RepoNotFoundMessage(chatID))
+								if err != nil {
+									logger.Error(err)
+								}
+								break
+							}
 						}
 						// TODO: check if exists before pushing
+						exists, err := db.CheckExisting(fmt.Sprint(chatID), repoToAdd.RepoID)
+						if err != nil {
+							logger.Error(err)
+
+						}
+
+						if exists {
+							_, err = bot.SendMessage(messages.AlreadyExistsMessage(chatID, update.Message.MessageID))
+							if err != nil {
+								logger.Error(err)
+							}
+							break
+						}
+
 						err = db.AddRepo(fmt.Sprint(chatID), &repoToAdd)
 						if err != nil {
 							logger.Error(err)
 						}
-						// TODO: handle this, user visible: backend
 
-						_, err = bot.SendMessage(messages.SuccesfullyAddedRepoMessage(chatID, update.Message.MessageID))
+						if hasReleases {
+							_, err = bot.SendMessage(messages.SuccesfullyAddedRepoMessage(chatID))
+							if err != nil {
+								logger.Error(err)
+							}
+						} else {
+							_, err = bot.SendMessage(messages.SuccesfullyAddedRepoWithoutReleasesMessage(chatID))
+							if err != nil {
+								logger.Error(err)
+							}
+						}
+
+					} else {
+						_, err = bot.SendMessage(messages.InvalidRepoMessage(chatID))
 						if err != nil {
 							logger.Error(err)
 						}
-						// TODO: handle this, user visible: backend
-
-					} else {
-						// TODO: implement
-						break
 					}
 				}
 			}
@@ -169,6 +206,7 @@ func main() {
 				if err != nil {
 					logger.Error(err)
 				}
+				delete(awaitingAddRepo, chatID)
 
 			// name hash callback, delete
 			default:
@@ -236,14 +274,37 @@ func validateAndBuildRepo(owner, name string, client *graphql.Client) (repo.Repo
 		return repo.Repo{}, err
 	}
 
+	if len(getRepoQuery.Repository.Releases.Nodes) != 0 {
+		return repo.Repo{
+			RepoID: getRepoQuery.Repository.ID,
+			Name:   getRepoQuery.Repository.Name,
+			Owner:  getRepoQuery.Repository.Owner.Login,
+			Link:   getRepoQuery.Repository.URL,
+			Release: repo.Release{
+				CurrentReleaseTagName: getRepoQuery.Repository.Releases.Nodes[0].TagName,
+				CurrentReleaseID:      getRepoQuery.Repository.Releases.Nodes[0].ID,
+			},
+		}, nil
+	}
+
 	return repo.Repo{
 		RepoID: getRepoQuery.Repository.ID,
 		Name:   getRepoQuery.Repository.Name,
 		Owner:  getRepoQuery.Repository.Owner.Login,
 		Link:   getRepoQuery.Repository.URL,
 		Release: repo.Release{
-			CurrentReleaseTagName: getRepoQuery.Repository.Releases.Nodes[0].TagName,
-			CurrentReleaseID:      getRepoQuery.Repository.Releases.Nodes[0].ID,
+			CurrentReleaseTagName: "",
+			CurrentReleaseID:      "",
 		},
-	}, nil
+	}, errors.ErrNoReleases
+}
+
+func updateRepos(w http.ResponseWriter, r *http.Request) {
+	// TODO: dump db
+
+	// TODO: check for new releases
+
+	// TODO: send messages
+
+	io.WriteString(w, "Updated")
 }
