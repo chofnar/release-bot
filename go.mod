@@ -14,7 +14,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.25 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.19 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.26 // indirect
-	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.13.22 // indirect
+	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.13.23 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.10 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.7.19 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.19 // indirect
@@ -37,8 +37,8 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.17.10
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.2
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.17.3
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.3
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.17.4
 	github.com/fasthttp/router v1.4.13 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect
