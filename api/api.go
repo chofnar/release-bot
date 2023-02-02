@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"context"
@@ -30,7 +30,7 @@ func Initialize(logger zap.SugaredLogger) (*botConfig.BotConfig, database.Databa
 	return conf, db
 }
 
-func main() {
+func Start() {
 	unsugared, err := zap.NewProduction()
 	if err != nil {
 		log.Fatal(err)
