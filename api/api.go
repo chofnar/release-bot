@@ -31,14 +31,14 @@ func Initialize(logger zap.SugaredLogger) (*botConfig.BotConfig, database.Databa
 }
 
 func Start() {
-	unsugared, err := zap.NewProduction()
+	unsugared, err := zap.NewDevelopment()
 	if err != nil {
 		log.Fatal(err)
 	}
 	logger := unsugared.Sugar()
 	botConf, db := Initialize(*logger)
 
-	bot, err := telego.NewBot(botConf.TelegramToken, telego.WithDefaultDebugLogger())
+	bot, err := telego.NewBot(botConf.TelegramToken, telego.WithLogger(logger))
 	if err != nil {
 		logger.Error(err)
 
