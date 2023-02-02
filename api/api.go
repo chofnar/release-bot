@@ -45,9 +45,16 @@ func Start() {
 		panic(err)
 	}
 
-	_ = bot.SetWebhook(&telego.SetWebhookParams{
-		URL: "https://" + botConf.WebhookSite + ":" + botConf.Port + "/bot/" + botConf.TelegramToken,
-	})
+	// can't get ngrok to forward properly without this
+	if os.Getenv("STAGING") == "TRUE" {
+		_ = bot.SetWebhook(&telego.SetWebhookParams{
+			URL: "https://" + botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
+		})
+	} else {
+		_ = bot.SetWebhook(&telego.SetWebhookParams{
+			URL: "https://" + botConf.WebhookSite + ":" + botConf.Port + "/bot/" + botConf.TelegramToken,
+		})
+	}
 
 	info, _ := bot.GetWebhookInfo()
 	fmt.Printf("Webhook info: %+v\n", info)
