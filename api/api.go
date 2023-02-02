@@ -70,14 +70,16 @@ func Start() {
 
 	// updater listener, called from cron from App Engine
 	// TODO: implement the cron
-	http.HandleFunc("/hello", updateRepos)
-	go http.ListenAndServe(":80", nil)
+	http.HandleFunc("/", home)
+	http.HandleFunc("/updateRepos", updateRepos)
+	go http.ListenAndServe(":8080", nil)
 
 	httpClient := oauth2.NewClient(context.Background(), src)
 	githubGQLClient := graphql.NewClient("https://api.github.com/graphql", httpClient)
 
 	ctx := context.Background()
 	nctx, stop := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
+
 	go updateLoop(ctx, updates, bot, db, githubGQLClient, *logger)
 	defer stop()
 	<-nctx.Done()
@@ -320,4 +322,8 @@ func updateRepos(w http.ResponseWriter, r *http.Request) {
 	// TODO: send messages
 
 	io.WriteString(w, "Updated")
+}
+
+func home(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "Something's working alright")
 }
