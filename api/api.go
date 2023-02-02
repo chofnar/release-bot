@@ -46,7 +46,7 @@ func Start() {
 	}
 
 	_ = bot.SetWebhook(&telego.SetWebhookParams{
-		URL: "https://" + botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
+		URL: "https://" + botConf.WebhookSite + ":" + botConf.Port + "/bot/" + botConf.TelegramToken,
 	})
 
 	info, _ := bot.GetWebhookInfo()
@@ -72,7 +72,7 @@ func Start() {
 	// TODO: implement the cron
 	http.HandleFunc("/", home)
 	http.HandleFunc("/updateRepos", updateRepos)
-	go http.ListenAndServe(":8080", nil)
+	go http.ListenAndServe(":" + botConf.Port, nil)
 
 	httpClient := oauth2.NewClient(context.Background(), src)
 	githubGQLClient := graphql.NewClient("https://api.github.com/graphql", httpClient)
