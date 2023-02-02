@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"regexp"
 	"strings"
 
@@ -35,13 +37,6 @@ func main() {
 	}
 	logger := unsugared.Sugar()
 	botConf, db := Initialize(*logger)
-
-	awaitingAddRepo := map[int64]struct{}{}
-	type void struct{}
-	var set void
-
-	linkRegex, _ := regexp.Compile("(?:https://)github.com[:/](.*)[:/](.*)")
-	directRegex, _ := regexp.Compile("(.*)[/](.*)")
 
 	bot, err := telego.NewBot(botConf.TelegramToken, telego.WithDefaultDebugLogger())
 	if err != nil {
@@ -81,7 +76,26 @@ func main() {
 	httpClient := oauth2.NewClient(context.Background(), src)
 	githubGQLClient := graphql.NewClient("https://api.github.com/graphql", httpClient)
 
-	for update := range updates {
+	ctx := context.Background()
+	nctx, stop := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
+	go updateLoop(ctx, updates, bot, db, githubGQLClient, *logger)
+	defer stop()
+	<-nctx.Done()
+}
+
+func updateLoop(ctx context.Context, updates <-chan telego.Update, bot *telego.Bot, db database.Database, githubGQLClient *graphql.Client, logger zap.SugaredLogger) {
+	type void struct{}
+	var set void
+	linkRegex, _ := regexp.Compile("(?:https://)github.com[:/](.*)[:/](.*)")
+	directRegex, _ := regexp.Compile("(.*)[/](.*)")
+
+	//TODO: make thread safe, but probably not needed since there's only one loop running
+	awaitingAddRepo := map[int64]struct{}{}
+
+	select {
+	case <-ctx.Done():
+		return
+	case update := <-updates:
 		var err error
 
 		// command
@@ -131,7 +145,6 @@ func main() {
 								break
 							}
 						}
-						// TODO: check if exists before pushing
 						exists, err := db.CheckExisting(fmt.Sprint(chatID), repoToAdd.RepoID)
 						if err != nil {
 							logger.Error(err)

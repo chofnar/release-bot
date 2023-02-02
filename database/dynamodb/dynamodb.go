@@ -45,7 +45,7 @@ func loadConfig() dynamoDBparams {
 	var params dynamoDBparams
 	params.fillDefaults()
 
-	if value := os.Getenv("BOT_ENDPOINT"); value != "" {
+	if value := os.Getenv("BOT_DYNAMODB_ENDPOINT"); value != "" {
 		params.endpoint = value
 	}
 	if value := os.Getenv("BOT_REGION"); value != "" {
