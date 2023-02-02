@@ -46,7 +46,7 @@ func Start() {
 	}
 
 	_ = bot.SetWebhook(&telego.SetWebhookParams{
-		URL: "https://" + botConf.WebhookSite + ":443" + "/bot/" + botConf.TelegramToken,
+		URL: "https://" + botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
 	})
 
 	info, _ := bot.GetWebhookInfo()
