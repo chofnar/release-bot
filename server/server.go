@@ -77,25 +77,12 @@ func Start() {
 		&oauth2.Token{AccessToken: botConf.GithubGQLToken},
 	)
 
-	http.HandleFunc("/", home)
-	// updater listener, called from cron
-	http.HandleFunc("/updateRepos", updateRepos)
-	go http.ListenAndServe(":"+botConf.Port, nil)
-
 	httpClient := oauth2.NewClient(context.Background(), src)
 	githubGQLClient := graphql.NewClient("https://api.github.com/graphql", httpClient)
 
-	ctx := context.Background()
-	nctx, stop := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
-
-	go updateLoop(ctx, updates, bot, db, githubGQLClient, *logger)
-	defer stop()
-	<-nctx.Done()
-}
-
-func updateLoop(ctx context.Context, updates <-chan telego.Update, bot *telego.Bot, db database.Database, githubGQLClient *graphql.Client, logger zap.SugaredLogger) {
 	linkRegex, _ := regexp.Compile("(?:https://)github.com[:/](.*)[:/](.*)")
 	directRegex, _ := regexp.Compile("(.*)[/](.*)")
+
 	behaviorHandler := behaviors.BehaviorHandler{
 		Bot:         bot,
 		LinkRegex:   linkRegex,
@@ -103,6 +90,20 @@ func updateLoop(ctx context.Context, updates <-chan telego.Update, bot *telego.B
 		GQLClient:   githubGQLClient,
 		DB:          db,
 	}
+
+	http.HandleFunc("/", home)
+	http.HandleFunc("/updateRepos", updateRepos(&behaviorHandler, *logger))
+	go http.ListenAndServe(":"+botConf.Port, nil)
+
+	ctx := context.Background()
+	nctx, stop := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
+
+	go updateLoop(ctx, updates, &behaviorHandler, *logger)
+	defer stop()
+	<-nctx.Done()
+}
+
+func updateLoop(ctx context.Context, updates <-chan telego.Update, behaviorHandler *behaviors.BehaviorHandler, logger zap.SugaredLogger) {
 	awaitingAddRepo := map[int64]struct{}{}
 	type void struct{}
 	var set void
@@ -182,14 +183,26 @@ func updateLoop(ctx context.Context, updates <-chan telego.Update, bot *telego.B
 	}
 }
 
-func updateRepos(w http.ResponseWriter, r *http.Request) {
-	// TODO: dump db
-
-	// TODO: check for new releases
-
-	// TODO: send messages
-
-	io.WriteString(w, "Updated")
+func updateRepos(behaviorHandler *behaviors.BehaviorHandler, logger zap.SugaredLogger) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
+			io.WriteString(w, err.Error())
+			w.WriteHeader(500)
+			logger.Error(err)
+			return
+		}
+		if string(b) != os.Getenv("SUPER_SECRET_TOKEN") {
+			w.WriteHeader(403)
+			return
+		}
+		err = behaviorHandler.UpdateRepos()
+		if err != nil {
+			io.WriteString(w, err.Error())
+			return
+		}
+		io.WriteString(w, "Updated")
+	}
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
