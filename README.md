@@ -9,4 +9,4 @@ It uses [mymmrac's Telegram Bot API implementation in Go](https://github.com/mym
 
 This is basically a rewrite of my [other Telegram bot](https://github.com/chofnar/BasicGithubReleasesTelegramBot) after I became a lot wiser in the ways of software development.
 
-Interact with the bot [here](https://t.me/prgitrelbot). (It's probably offline though)
+Interact with the bot [here](https://t.me/prgitrelbot)
