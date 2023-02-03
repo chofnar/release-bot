@@ -2,9 +2,8 @@ package server
 
 import (
 	"context"
-	"io"
+	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"regexp"
@@ -14,8 +13,10 @@ import (
 	"github.com/chofnar/release-bot/server/behaviors"
 	botConfig "github.com/chofnar/release-bot/server/config"
 	"github.com/chofnar/release-bot/server/consts"
+	"github.com/fasthttp/router"
 	"github.com/hasura/go-graphql-client"
 	"github.com/mymmrac/telego"
+	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 )
@@ -42,36 +43,6 @@ func Start() {
 		panic(err)
 	}
 
-	// can't get ngrok to forward properly without this
-	if os.Getenv("STAGING") == "TRUE" {
-		err = bot.SetWebhook(&telego.SetWebhookParams{
-			URL: "https://" + botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
-		})
-		if err != nil {
-			logger.Error(err)
-
-			panic(err)
-		}
-	}
-
-	updates, err := bot.UpdatesViaWebhook("/bot/" + botConf.TelegramToken)
-	if err != nil {
-		logger.Error(err)
-
-		panic(err)
-	}
-
-	err = bot.StartListeningForWebhook("0.0.0.0" + ":" + botConf.Port)
-	if err != nil {
-		logger.Error(err)
-
-		panic(err)
-	}
-
-	defer func() {
-		_ = bot.StopWebhook()
-	}()
-
 	// Create Github GraphQL token
 	src := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: botConf.GithubGQLToken},
@@ -91,9 +62,41 @@ func Start() {
 		DB:          db,
 	}
 
-	http.HandleFunc("/", home)
-	http.HandleFunc("/updateRepos", updateRepos(&behaviorHandler, *logger))
-	go http.ListenAndServe(":"+botConf.Port, nil)
+	// can't get ngrok to forward properly without this
+	if os.Getenv("STAGING") == "TRUE" {
+		err = bot.SetWebhook(&telego.SetWebhookParams{
+			URL: "https://" + botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
+		})
+		if err != nil {
+			logger.Error(err)
+
+			panic(err)
+		}
+	}
+
+	rtr := router.New()
+	rtr.GET("/", home)
+	rtr.POST("/updateRepos", func(ctx *fasthttp.RequestCtx) {
+		updateRepos(ctx, &behaviorHandler, *logger)
+	})
+
+	updates, err := bot.UpdatesViaWebhook("/bot/"+botConf.TelegramToken, telego.WithWebhookRouter(rtr))
+	if err != nil {
+		logger.Error(err)
+
+		panic(err)
+	}
+
+	err = bot.StartListeningForWebhook("0.0.0.0" + ":" + botConf.Port)
+	if err != nil {
+		logger.Error(err)
+
+		panic(err)
+	}
+
+	defer func() {
+		_ = bot.StopWebhook()
+	}()
 
 	ctx := context.Background()
 	nctx, stop := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
@@ -183,28 +186,20 @@ func updateLoop(ctx context.Context, updates <-chan telego.Update, behaviorHandl
 	}
 }
 
-func updateRepos(behaviorHandler *behaviors.BehaviorHandler, logger zap.SugaredLogger) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		b, err := io.ReadAll(r.Body)
-		if err != nil {
-			io.WriteString(w, err.Error())
-			w.WriteHeader(500)
-			logger.Error(err)
-			return
-		}
-		if string(b) != os.Getenv("SUPER_SECRET_TOKEN") {
-			w.WriteHeader(403)
-			return
-		}
-		err = behaviorHandler.UpdateRepos()
-		if err != nil {
-			io.WriteString(w, err.Error())
-			return
-		}
-		io.WriteString(w, "Updated")
+func updateRepos(ctx *fasthttp.RequestCtx, behaviorHandler *behaviors.BehaviorHandler, logger zap.SugaredLogger) {
+	if string(ctx.Request.Body()) != os.Getenv("SUPER_SECRET_TOKEN") {
+		fmt.Fprint(ctx, "Incorrect secret token")
+		return
 	}
+
+	err := behaviorHandler.UpdateRepos()
+	if err != nil {
+		fmt.Fprint(ctx, err)
+		return
+	}
+	fmt.Fprint(ctx, "Updated")
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Something's working alright")
+func home(ctx *fasthttp.RequestCtx) {
+	fmt.Fprint(ctx, "Something's working alright")
 }

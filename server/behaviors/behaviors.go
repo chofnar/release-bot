@@ -202,6 +202,7 @@ func (bh BehaviorHandler) DeleteRepo(chatID int64, messageID int, data string) e
 }
 
 func (bh BehaviorHandler) UpdateRepos() error {
+	//TODO: use bh.DB.AllRepos()
 
 	return nil
 }

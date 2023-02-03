@@ -40,12 +40,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.10
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.10
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.18.1
-	github.com/fasthttp/router v1.4.15 // indirect
+	github.com/fasthttp/router v1.4.15
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.44.0 // indirect
+	github.com/valyala/fasthttp v1.44.0
 	go.uber.org/zap v1.23.0
 	golang.org/x/oauth2 v0.4.0
 )
