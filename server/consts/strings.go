@@ -19,7 +19,7 @@ const (
 
 	ShowingAllReposMessage = "Here's all your added repos with their releases"
 
-	ShowingAllReposButNoneFoundMessage = "You haven't added any repos. Add one?"
+	ShowingAllReposButNoneFoundMessage = "There are no watched repos. Add one?"
 
 	DelteRepoEmoji = "🗑️"
 

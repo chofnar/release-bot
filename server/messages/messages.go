@@ -3,9 +3,9 @@ package messages
 import (
 	"fmt"
 
-	"github.com/chofnar/release-bot/api/consts"
 	"github.com/chofnar/release-bot/database"
 	"github.com/chofnar/release-bot/errors"
+	"github.com/chofnar/release-bot/server/consts"
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 )
