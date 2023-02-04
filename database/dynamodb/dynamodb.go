@@ -2,6 +2,7 @@ package dynamodb
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -150,7 +151,7 @@ func (db *Driver) RemoveRepo(chatID, repoID string) error {
 	return err
 }
 
-func (db *Driver) AllRepos() (*[]repo.Repo, error) {
+func (db *Driver) AllRepos() ([]repo.RepoWithChatID, error) {
 	// TODO: may need to implement pagination
 	result, err := db.client.Scan(context.TODO(), &dynamodb.ScanInput{
 		TableName: &db.tableName,
@@ -160,18 +161,31 @@ func (db *Driver) AllRepos() (*[]repo.Repo, error) {
 		return nil, err
 	}
 
-	repos := make([]repo.Repo, len(result.Items))
+	repos := make([]repo.RepoWithChatID, len(result.Items))
 
 	err = attributevalue.UnmarshalListOfMaps(result.Items, &repos)
 	if err != nil {
 		return nil, err
 	}
 
-	return &repos, nil
+	return repos, nil
 }
 
-func (db *Driver) UpdateEntry(chatID, repoID, newTagName string) error {
-	return nil
+func (db *Driver) UpdateEntry(repo repo.RepoWithChatID) error {
+	_, err := db.client.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		Key: map[string]types.AttributeValue{
+			"chatID": &types.AttributeValueMemberS{Value: fmt.Sprint(repo.ChatID)},
+			"repoID": &types.AttributeValueMemberS{Value: repo.RepoID},
+		},
+		UpdateExpression: aws.String("set currentReleaseID = :releaseID, currentReleaseTagName = :releaseTagName"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":releaseID":      &types.AttributeValueMemberS{Value: repo.CurrentReleaseID},
+			":releaseTagName": &types.AttributeValueMemberS{Value: repo.CurrentReleaseTagName},
+		},
+		TableName: &db.tableName,
+	})
+
+	return err
 }
 
 func (db *Driver) CheckExisting(chatID, repoID string) (bool, error) {

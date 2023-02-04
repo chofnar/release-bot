@@ -201,8 +201,36 @@ func (bh BehaviorHandler) DeleteRepo(chatID int64, messageID int, data string) e
 	return bh.SeeAll(chatID, messageID)
 }
 
+func (bh BehaviorHandler) newUpdate(repository repo.RepoWithChatID) error {
+	_, err := bh.Bot.SendMessage(messages.UpdateMessage(repository))
+	return err
+}
+
 func (bh BehaviorHandler) UpdateRepos() error {
-	//TODO: use bh.DB.AllRepos()
+	repos, err := bh.DB.AllRepos()
+	if err != nil {
+		return err
+	}
+
+	for _, repository := range repos {
+		newlyRetrievedRepo, err := bh.validateAndBuildRepo(repository.Owner, repository.Name)
+		if err != nil {
+			return err
+		}
+
+		if newlyRetrievedRepo.CurrentReleaseID != repository.CurrentReleaseID {
+			withChatID := repo.RepoWithChatID{
+				Repo:   newlyRetrievedRepo,
+				ChatID: repository.ChatID,
+			}
+			err = bh.DB.UpdateEntry(withChatID)
+			if err != nil {
+				return err
+			}
+
+			return bh.newUpdate(withChatID)
+		}
+	}
 
 	return nil
 }

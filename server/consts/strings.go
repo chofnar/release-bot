@@ -35,4 +35,6 @@ const (
 	RepoExists = "Repo already exists in your watched list. Try another?"
 
 	RepoNotFound = "I could not find the repo. Try again?"
+
+	CheckRepo = "Check it out"
 )

@@ -12,3 +12,8 @@ type Repo struct {
 	Link   string `dynamodbav:"repoLink,string"`
 	Release
 }
+
+type RepoWithChatID struct {
+	Repo
+	ChatID string `dynamobav:"chatID,string"`
+}
