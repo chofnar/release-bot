@@ -2,16 +2,42 @@ package messages
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/chofnar/release-bot/database"
 	"github.com/chofnar/release-bot/errors"
 	"github.com/chofnar/release-bot/server/consts"
+	"github.com/chofnar/release-bot/server/repo"
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 )
 
 func StartMessage(chatID int64) *telego.SendMessageParams {
 	return tu.Message(tu.ID(chatID), consts.StartMessage).WithReplyMarkup(consts.StartKeyboard)
+}
+
+func UpdateMessage(repository repo.RepoWithChatID) *telego.SendMessageParams {
+	currentRow := make([]telego.InlineKeyboardButton, 1)
+
+	kbd := telego.InlineKeyboardMarkup{
+		InlineKeyboard: [][]telego.InlineKeyboardButton{
+			{
+				telego.InlineKeyboardButton{
+					Text: consts.CheckRepo,
+					URL:  repository.Link + "/releases/" + repository.CurrentReleaseTagName,
+				},
+			},
+		},
+	}
+	releaseButton := telego.InlineKeyboardButton{
+		Text: consts.CheckRepo,
+		URL:  repository.Link + "/releases/" + repository.CurrentReleaseTagName,
+	}
+	currentRow[0] = releaseButton
+
+	intID, _ := strconv.Atoi(repository.ChatID)
+
+	return tu.Message(tu.ID(int64(intID)), "New release:"+repository.Name+" : "+repository.CurrentReleaseTagName).WithReplyMarkup(&kbd)
 }
 
 func EditedStartMessage(chatID int64, messageID int) *telego.EditMessageTextParams {
