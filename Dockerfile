@@ -7,13 +7,13 @@ RUN go mod download
 
 COPY . ./
 
-RUN go build -mod=readonly -v -o server
+RUN go build -mod=readonly -v -o bot
 
 FROM debian:buster-slim
 RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/server /app/server
+COPY --from=builder /app/bot /app/bot
 
-CMD ["/app/server"]
+CMD ["/app/bot"]

@@ -72,6 +72,15 @@ func Start() {
 
 			panic(err)
 		}
+	} else {
+		err = bot.SetWebhook(&telego.SetWebhookParams{
+			URL: "https://" + botConf.WebhookSite + ":" + botConf.Port + "/bot/" + botConf.TelegramToken,
+		})
+		if err != nil {
+			logger.Error(err)
+
+			panic(err)
+		}
 	}
 
 	rtr := router.New()
