@@ -32,3 +32,12 @@ var AddAnotherRepoKeyboard *telego.InlineKeyboardMarkup = tu.InlineKeyboard(
 		},
 	),
 )
+
+var CancelAddKeyboard *telego.InlineKeyboardMarkup = tu.InlineKeyboard(
+	tu.InlineKeyboardRow(
+		telego.InlineKeyboardButton{
+			Text:         ShowingAddRepoCancel,
+			CallbackData: MenuCallback,
+		},
+	),
+)

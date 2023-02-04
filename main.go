@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/chofnar/release-bot/api"
+	"github.com/chofnar/release-bot/server"
 )
 
 func main() {
-	api.Start()
+	server.Start()
 }

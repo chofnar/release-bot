@@ -25,11 +25,12 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
@@ -39,12 +40,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.10
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.10
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.18.1
-	github.com/fasthttp/router v1.4.15 // indirect
+	github.com/fasthttp/router v1.4.15
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.44.0 // indirect
+	github.com/valyala/fasthttp v1.44.0
 	go.uber.org/zap v1.23.0
 	golang.org/x/oauth2 v0.4.0
 )

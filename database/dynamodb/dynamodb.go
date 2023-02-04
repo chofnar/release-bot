@@ -9,9 +9,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/chofnar/release-bot/api/repo"
 	"github.com/chofnar/release-bot/database"
 	"github.com/chofnar/release-bot/errors"
+	"github.com/chofnar/release-bot/server/repo"
 	"go.uber.org/zap"
 )
 

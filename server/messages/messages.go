@@ -3,8 +3,9 @@ package messages
 import (
 	"fmt"
 
-	"github.com/chofnar/release-bot/api/consts"
 	"github.com/chofnar/release-bot/database"
+	"github.com/chofnar/release-bot/errors"
+	"github.com/chofnar/release-bot/server/consts"
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 )
@@ -30,11 +31,21 @@ func UnknownCommandMessage(chatID int64) *telego.SendMessageParams {
 	return tu.Message(tu.ID(chatID), consts.UnknownCommandMessage)
 }
 
-func SeeAllReposMessage(chatID int64, messageID int) *telego.EditMessageTextParams {
+func SeeAllReposMessage(chatID int64, messageID int, markup telego.InlineKeyboardMarkup) *telego.EditMessageTextParams {
 	return &telego.EditMessageTextParams{
-		ChatID:    tu.ID(chatID),
-		MessageID: int(messageID),
-		Text:      consts.ShowingAllReposMessage,
+		ChatID:      tu.ID(chatID),
+		MessageID:   int(messageID),
+		Text:        consts.ShowingAllReposMessage,
+		ReplyMarkup: &markup,
+	}
+}
+
+func SeeAllReposButNoneFoundMessage(chatID int64, messageID int, markup telego.InlineKeyboardMarkup) *telego.EditMessageTextParams {
+	return &telego.EditMessageTextParams{
+		ChatID:      tu.ID(chatID),
+		MessageID:   int(messageID),
+		Text:        consts.ShowingAllReposButNoneFoundMessage,
+		ReplyMarkup: &markup,
 	}
 }
 
@@ -42,6 +53,15 @@ func SeeAllReposMarkup(chatID int64, messageID int, database *database.Database)
 	repoList, err := (*database).GetRepos(fmt.Sprint(chatID))
 	if err != nil {
 		return nil, err
+	}
+
+	if len(repoList) == 0 {
+
+		return &telego.EditMessageReplyMarkupParams{
+			ChatID:      tu.ID(chatID),
+			MessageID:   messageID,
+			ReplyMarkup: consts.AddAnotherRepoKeyboard,
+		}, errors.ErrNoRepos
 	}
 
 	rows := make([][]telego.InlineKeyboardButton, len(repoList))
@@ -84,7 +104,7 @@ func AddRepoMessage(chatID int64, messageID int) *telego.EditMessageTextParams {
 		ChatID:      tu.ID(chatID),
 		MessageID:   messageID,
 		Text:        consts.ShowingAddRepoMessage,
-		ReplyMarkup: nil,
+		ReplyMarkup: consts.CancelAddKeyboard,
 	}
 }
 
