@@ -228,7 +228,10 @@ func (bh BehaviorHandler) UpdateRepos() error {
 				return err
 			}
 
-			return bh.newUpdate(withChatID)
+			err = bh.newUpdate(withChatID)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

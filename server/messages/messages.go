@@ -37,7 +37,7 @@ func UpdateMessage(repository repo.RepoWithChatID) *telego.SendMessageParams {
 
 	intID, _ := strconv.Atoi(repository.ChatID)
 
-	return tu.Message(tu.ID(int64(intID)), "New release:"+repository.Name+" : "+repository.CurrentReleaseTagName).WithReplyMarkup(&kbd)
+	return tu.Message(tu.ID(int64(intID)), "New release: "+repository.Name+" : "+repository.CurrentReleaseTagName).WithReplyMarkup(&kbd)
 }
 
 func EditedStartMessage(chatID int64, messageID int) *telego.EditMessageTextParams {
