@@ -3,7 +3,7 @@ module github.com/chofnar/release-bot
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.17.3
+	github.com/aws/aws-sdk-go-v2 v1.17.4
 	github.com/hasura/go-graphql-client v0.8.1
 	github.com/mymmrac/telego v0.19.0
 )
