@@ -22,7 +22,7 @@ type BehaviorHandler struct {
 }
 
 func (bh BehaviorHandler) About(chatID int64) error {
-	_, err := bh.Bot.SendMessage(messages.StartMessage(chatID))
+	_, err := bh.Bot.SendMessage(messages.AboutMessage(chatID))
 	return err
 }
 
