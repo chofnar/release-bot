@@ -89,19 +89,20 @@ func Start() {
 		updateRepos(ctx, &behaviorHandler, *logger)
 	})
 
-	updates, err := bot.UpdatesViaWebhook("/bot/"+botConf.TelegramToken, telego.WithWebhookRouter(rtr))
+	updates, err := bot.UpdatesViaWebhook("/bot/"+botConf.TelegramToken, telego.WithWebhookServer(telego.FastHTTPWebhookServer{
+		Logger: logger,
+		Server: &fasthttp.Server{},
+		Router: rtr,
+	}))
 	if err != nil {
 		logger.Error(err)
 
 		panic(err)
 	}
 
-	err = bot.StartListeningForWebhook("0.0.0.0" + ":" + botConf.Port)
-	if err != nil {
-		logger.Error(err)
-
-		panic(err)
-	}
+	go func() {
+		_ = bot.StartWebhook("localhost:" + botConf.Port)
+	}()
 
 	defer func() {
 		_ = bot.StopWebhook()
