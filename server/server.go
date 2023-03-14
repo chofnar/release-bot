@@ -10,6 +10,7 @@ import (
 
 	"github.com/chofnar/release-bot/database"
 	databaseLoader "github.com/chofnar/release-bot/database/loader"
+	"github.com/chofnar/release-bot/errors"
 	"github.com/chofnar/release-bot/server/behaviors"
 	botConfig "github.com/chofnar/release-bot/server/config"
 	"github.com/chofnar/release-bot/server/consts"
@@ -199,14 +200,18 @@ func updateLoop(ctx context.Context, updates <-chan telego.Update, behaviorHandl
 func updateRepos(ctx *fasthttp.RequestCtx, behaviorHandler *behaviors.BehaviorHandler, logger zap.SugaredLogger) {
 	if string(ctx.Request.Body()) != os.Getenv("SUPER_SECRET_TOKEN") {
 		fmt.Fprint(ctx, "Incorrect secret token")
+		logger.Error(errors.ErrUpdateIncorrectToken)
 		return
 	}
 
-	err := behaviorHandler.UpdateRepos()
-	if err != nil {
+	failedRepoErrors := behaviorHandler.UpdateRepos()
+	for _, err := range failedRepoErrors {
 		fmt.Fprint(ctx, err)
+		logger.Error(err)
 		return
 	}
+
+	logger.Info("Repos updated succesfully")
 	fmt.Fprint(ctx, "Updated")
 }
 
