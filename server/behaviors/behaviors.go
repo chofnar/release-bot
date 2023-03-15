@@ -206,18 +206,23 @@ func (bh BehaviorHandler) newUpdate(repository repo.RepoWithChatID) error {
 	return err
 }
 
-func (bh BehaviorHandler) UpdateRepos() []error {
+type erroredRepo struct {
+	Err error
+	Repo repo.Repo
+}
+
+func (bh BehaviorHandler) UpdateRepos() []erroredRepo {
 	repos, err := bh.DB.AllRepos()
-	failedRepos := []error{}
+	failedRepos := []erroredRepo{}
 	if err != nil {
-		failedRepos = append(failedRepos, err)
+		failedRepos = append(failedRepos, erroredRepo{Err: err})
 		return failedRepos
 	}
 
 	for _, repository := range repos {
 		newlyRetrievedRepo, err := bh.validateAndBuildRepo(repository.Owner, repository.Name)
 		if err != nil {
-			failedRepos = append(failedRepos, err)
+			failedRepos = append(failedRepos, erroredRepo{Err: err, Repo: newlyRetrievedRepo})
 			continue
 		}
 
@@ -228,17 +233,17 @@ func (bh BehaviorHandler) UpdateRepos() []error {
 			}
 			err = bh.DB.UpdateEntry(withChatID)
 			if err != nil {
-				failedRepos = append(failedRepos, err)
+				failedRepos = append(failedRepos, erroredRepo{Err: err, Repo: newlyRetrievedRepo})
 				continue
 			}
 
 			err = bh.newUpdate(withChatID)
 			if err != nil {
-				failedRepos = append(failedRepos, err)
+				failedRepos = append(failedRepos, erroredRepo{Err: err, Repo: newlyRetrievedRepo})
 				continue
 			}
 		}
 	}
 
-	return nil
+	return failedRepos
 }

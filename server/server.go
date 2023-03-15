@@ -63,27 +63,15 @@ func Start() {
 		DB:          db,
 	}
 
-	// can't get ngrok to forward properly without this
-	if os.Getenv("STAGING") == "TRUE" {
-		err = bot.SetWebhook(&telego.SetWebhookParams{
-			URL: "https://" + botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
-		})
-		if err != nil {
-			logger.Error(err)
+	err = bot.SetWebhook(&telego.SetWebhookParams{
+		URL: botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
+	})
+	if err != nil {
+		logger.Error(err)
 
-			panic(err)
-		}
-	} else {
-		err = bot.SetWebhook(&telego.SetWebhookParams{
-			URL: "https://" + botConf.WebhookSite + ":" + botConf.Port + "/bot/" + botConf.TelegramToken,
-		})
-		if err != nil {
-			logger.Error(err)
-
-			panic(err)
-		}
+		panic(err)
 	}
-
+	
 	rtr := router.New()
 	rtr.GET("/", home)
 	rtr.POST("/updateRepos", func(ctx *fasthttp.RequestCtx) {
