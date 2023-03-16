@@ -207,8 +207,8 @@ func (bh BehaviorHandler) newUpdate(repository repo.RepoWithChatID) error {
 }
 
 type erroredRepo struct {
-	Err error
-	Repo repo.Repo
+	Err  error     `json:"err,omitempty"`
+	Repo repo.Repo `json:"repo,omitempty"`
 }
 
 func (bh BehaviorHandler) UpdateRepos() []erroredRepo {
