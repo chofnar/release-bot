@@ -77,11 +77,9 @@ func Start() {
 	}
 
 	err = bot.SetWebhook(&telego.SetWebhookParams{
-		URL: botConf.WebhookSite + "/bot" + botConf.TelegramToken,
+		URL: botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
 	})
 	if err != nil {
-		logger.Error(err)
-
 		panic(err)
 	}
 
@@ -91,18 +89,19 @@ func Start() {
 	up := UpdatePath{}
 	mux.Handle("/updateRepos", up.UpdateRepos(&behaviorHandler, *logger))
 
-	updates, err := bot.UpdatesViaWebhook("/bot"+bot.Token(), telego.WithWebhookServer(telego.HTTPWebhookServer{
+	updates, err := bot.UpdatesViaWebhook("/bot/"+bot.Token(), telego.WithWebhookServer(telego.HTTPWebhookServer{
 		Logger:   logger,
 		Server:   &http.Server{},
 		ServeMux: mux,
 	}))
 	if err != nil {
-		logger.Error(err)
-
 		panic(err)
 	}
 
-	botHandler, _ := th.NewBotHandler(bot, updates)
+	botHandler, err := th.NewBotHandler(bot, updates)
+	if err != nil {
+		panic(err)
+	}
 
 	// register handlers
 	botHandler.Handle(handler.Start(), th.CommandEqual("start"))
@@ -122,7 +121,10 @@ func Start() {
 	}()
 
 	go func() {
-		_ = bot.StartWebhook("localhost:" + botConf.Port)
+		err = bot.StartWebhook("localhost:" + botConf.Port)
+		if err != nil {
+			panic(err)
+		}
 	}()
 
 	defer func() {
