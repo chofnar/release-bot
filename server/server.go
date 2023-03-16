@@ -121,7 +121,7 @@ func Start() {
 	}()
 
 	go func() {
-		err = bot.StartWebhook("localhost:" + botConf.Port)
+		err = bot.StartWebhook("0.0.0.0:" + botConf.Port)
 		if err != nil {
 			panic(err)
 		}
