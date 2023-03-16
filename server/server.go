@@ -84,8 +84,8 @@ func Start() {
 	}
 
 	mux := http.NewServeMux()
-	hp := HomePath{}
-	mux.Handle("/", hp)
+	tp := TimePath{}
+	mux.Handle("/time", tp)
 	up := UpdatePath{}
 	mux.Handle("/updateRepos", up.UpdateRepos(&behaviorHandler, *logger))
 
@@ -139,9 +139,9 @@ func Start() {
 	<-nctx.Done()
 }
 
-type HomePath struct{}
+type TimePath struct{}
 
-func (hp HomePath) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (hp TimePath) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	tm := time.Now().Format(time.UnixDate)
 	w.Write([]byte("The time is: " + tm))
 }
