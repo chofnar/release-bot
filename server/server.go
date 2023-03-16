@@ -29,7 +29,7 @@ func Initialize(logger zap.SugaredLogger) (*botConfig.BotConfig, database.Databa
 }
 
 func Start() {
-	unsugared, err := zap.NewProduction()
+	unsugared, err := zap.NewDevelopment()
 	if err != nil {
 		log.Fatal(err)
 	}
