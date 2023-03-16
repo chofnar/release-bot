@@ -110,9 +110,9 @@ func Start() {
 
 	// Callback queries
 	botHandler.HandleCallbackQuery(handler.SeeAll(), th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(consts.SeeAllCallback))
-	botHandler.HandleCallbackQuery(handler.Add(), th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(consts.SeeAllCallback))
-	botHandler.HandleCallbackQuery(handler.Menu(), th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(consts.SeeAllCallback))
-	botHandler.HandleCallbackQuery(handler.Delete(), th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(consts.SeeAllCallback))
+	botHandler.HandleCallbackQuery(handler.Add(), th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(consts.AddCallback))
+	botHandler.HandleCallbackQuery(handler.Menu(), th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(consts.MenuCallback))
+	botHandler.HandleCallbackQuery(handler.Delete(), th.AnyCallbackQueryWithMessage(), th.AnyCallbackQuery())
 
 	// start listening
 
