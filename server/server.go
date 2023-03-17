@@ -106,13 +106,13 @@ func Start() {
 	// register handlers
 	botHandler.Handle(handler.Start(), th.CommandEqual("start"))
 	botHandler.Handle(handler.About(), th.CommandEqual("about"))
-	botHandler.Handle(handler.UnknownOrSent(), th.AnyCommand())
+	botHandler.Handle(handler.UnknownOrSent(), th.AnyMessageWithText())
 
 	// Callback queries
-	botHandler.HandleCallbackQuery(handler.SeeAll(), th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(consts.SeeAllCallback))
-	botHandler.HandleCallbackQuery(handler.Add(), th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(consts.AddCallback))
-	botHandler.HandleCallbackQuery(handler.Menu(), th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual(consts.MenuCallback))
-	botHandler.HandleCallbackQuery(handler.Delete(), th.AnyCallbackQueryWithMessage(), th.AnyCallbackQuery())
+	botHandler.HandleCallbackQuery(handler.SeeAll(), th.CallbackDataEqual(consts.SeeAllCallback))
+	botHandler.HandleCallbackQuery(handler.Add(), th.CallbackDataEqual(consts.AddCallback))
+	botHandler.HandleCallbackQuery(handler.Menu(), th.CallbackDataEqual(consts.MenuCallback))
+	botHandler.HandleCallbackQuery(handler.Delete(), th.AnyCallbackQuery())
 
 	// start listening
 
