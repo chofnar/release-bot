@@ -76,11 +76,13 @@ func Start() {
 		AwaitingAddRepo: awaitingAddRepo,
 	}
 
-	err = bot.SetWebhook(&telego.SetWebhookParams{
-		URL: botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
-	})
-	if err != nil {
-		panic(err)
+	if botConf.ResetWebhookUrl != "" {
+		err = bot.SetWebhook(&telego.SetWebhookParams{
+			URL: botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
+		})
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	mux := http.NewServeMux()
@@ -103,22 +105,26 @@ func Start() {
 		panic(err)
 	}
 
-	// register handlers
-	botHandler.Handle(handler.Start(), th.CommandEqual("start"))
-	botHandler.Handle(handler.About(), th.CommandEqual("about"))
-	botHandler.Handle(handler.UnknownOrSent(), th.AnyMessageWithText())
+	if botConf.UseUpdateLoop != "" {
+		go updateLoop(context.Background(), updates, &behaviorHandler, *logger)
+	} else {
+		// register handlers
+		botHandler.Handle(handler.Start(), th.CommandEqual("start"))
+		botHandler.Handle(handler.About(), th.CommandEqual("about"))
+		botHandler.Handle(handler.UnknownOrSent(), th.AnyMessageWithText())
 
-	// Callback queries
-	botHandler.HandleCallbackQuery(handler.SeeAll(), th.CallbackDataEqual(consts.SeeAllCallback))
-	botHandler.HandleCallbackQuery(handler.Add(), th.CallbackDataEqual(consts.AddCallback))
-	botHandler.HandleCallbackQuery(handler.Menu(), th.CallbackDataEqual(consts.MenuCallback))
-	botHandler.HandleCallbackQuery(handler.Delete(), th.AnyCallbackQuery())
+		// Callback queries
+		botHandler.HandleCallbackQuery(handler.SeeAll(), th.CallbackDataEqual(consts.SeeAllCallback))
+		botHandler.HandleCallbackQuery(handler.Add(), th.CallbackDataEqual(consts.AddCallback))
+		botHandler.HandleCallbackQuery(handler.Menu(), th.CallbackDataEqual(consts.MenuCallback))
+		botHandler.HandleCallbackQuery(handler.Delete(), th.AnyCallbackQuery())
 
-	// start listening
+		// start listening
 
-	go func() {
-		botHandler.Start()
-	}()
+		go func() {
+			botHandler.Start()
+		}()
+	}
 
 	go func() {
 		err = bot.StartWebhook("0.0.0.0:" + botConf.Port)
@@ -183,5 +189,85 @@ func (up UpdatePath) UpdateRepos(behaviorHandler *behaviors.BehaviorHandler, log
 		msg := "Repos updated succesfully with no funky business"
 		logger.Info(msg)
 		w.Write([]byte(msg))
+	}
+}
+
+func updateLoop(ctx context.Context, updates <-chan telego.Update, behaviorHandler *behaviors.BehaviorHandler, logger zap.SugaredLogger) {
+	awaitingAddRepo := map[int64]struct{}{}
+	type void struct{}
+	var set void
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case update := <-updates:
+			var err error
+
+			// command
+			if update.Message != nil {
+				chatID := update.Message.Chat.ID
+
+				switch update.Message.Text {
+				case "/start":
+					err = behaviorHandler.Start(chatID)
+					if err != nil {
+						logger.Error(err)
+					}
+
+				case "/about":
+					err = behaviorHandler.About(chatID)
+					if err != nil {
+						logger.Error(err)
+					}
+
+				default:
+					if _, ok := awaitingAddRepo[chatID]; !ok {
+						err = behaviorHandler.UnknownCommand(chatID)
+						if err != nil {
+							logger.Error(err)
+						}
+					} else {
+						err = behaviorHandler.SentRepo(update.Message.Text, update.Message.MessageID, chatID)
+						if err != nil {
+							logger.Error(err)
+						}
+					}
+				}
+			} else {
+				chatID := update.CallbackQuery.Message.Chat.ID
+				messageID := update.CallbackQuery.Message.MessageID
+
+				switch update.CallbackQuery.Data {
+				case consts.SeeAllCallback:
+					err := behaviorHandler.SeeAll(chatID, messageID)
+					if err != nil {
+						logger.Error(err)
+					}
+
+				case consts.AddCallback:
+					err = behaviorHandler.Add(chatID, messageID)
+					if err != nil {
+						logger.Error(err)
+					}
+					awaitingAddRepo[chatID] = set
+
+				case consts.MenuCallback:
+					err := behaviorHandler.Menu(chatID, messageID)
+					if err != nil {
+						logger.Error(err)
+					}
+					delete(awaitingAddRepo, chatID)
+
+				//TODO: can probably just use the name now
+				// name hash callback, delete
+				default:
+					err = behaviorHandler.DeleteRepo(chatID, messageID, update.CallbackQuery.Data)
+					if err != nil {
+						logger.Error(err)
+					}
+				}
+			}
+		}
 	}
 }
