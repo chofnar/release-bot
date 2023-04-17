@@ -3,7 +3,7 @@ module github.com/chofnar/release-bot
 go 1.20
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.17.7
+	github.com/aws/aws-sdk-go-v2 v1.17.8
 	github.com/hasura/go-graphql-client v0.9.2
 	github.com/mymmrac/telego v0.22.0
 )
@@ -11,12 +11,12 @@ require (
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.18 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.1 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.31 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.25 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.32 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.26 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.32 // indirect
-	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.14.7 // indirect
+	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.14.9 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.11 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.7.25 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.7.26 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.25 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.12.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.6 // indirect
@@ -38,8 +38,8 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.18.19
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.19
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.2
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.21
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.4
 	github.com/fasthttp/router v1.4.18 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/klauspost/compress v1.16.3 // indirect
