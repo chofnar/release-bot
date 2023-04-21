@@ -3,6 +3,7 @@ package repo
 type Release struct {
 	CurrentReleaseTagName string `dynamodbav:"currentReleaseTagName,string" json:"tag_name"`
 	CurrentReleaseID      string `dynamodbav:"currentReleaseID,string" json:"id"`
+	IsPrerelease          bool   `json:"isPrerelease"`
 }
 
 type Repo struct {

@@ -126,8 +126,9 @@ func (bh BehaviorHandler) validateAndBuildRepo(owner, name string) (repo.Repo, e
 			}
 			Releases struct {
 				Nodes []struct {
-					TagName string
-					ID      string
+					TagName      string
+					ID           string
+					IsPrerelease bool
 				}
 			} `graphql:"releases(first: 1)"`
 		} `graphql:"repository(name: $name, owner: $owner)"`
@@ -147,6 +148,7 @@ func (bh BehaviorHandler) validateAndBuildRepo(owner, name string) (repo.Repo, e
 			Release: repo.Release{
 				CurrentReleaseTagName: getRepoQuery.Repository.Releases.Nodes[0].TagName,
 				CurrentReleaseID:      getRepoQuery.Repository.Releases.Nodes[0].ID,
+				IsPrerelease:          getRepoQuery.Repository.Releases.Nodes[0].IsPrerelease,
 			},
 		}, nil
 	}
@@ -226,7 +228,7 @@ func (bh BehaviorHandler) UpdateRepos() []erroredRepo {
 			continue
 		}
 
-		if newlyRetrievedRepo.CurrentReleaseID != repository.CurrentReleaseID {
+		if newlyRetrievedRepo.CurrentReleaseID != repository.CurrentReleaseID && !newlyRetrievedRepo.IsPrerelease {
 			withChatID := repo.RepoWithChatID{
 				Repo:   newlyRetrievedRepo,
 				ChatID: repository.ChatID,
