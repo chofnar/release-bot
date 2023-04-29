@@ -117,7 +117,7 @@ func Start() {
 		botHandler.HandleCallbackQuery(handler.SeeAll(), th.CallbackDataEqual(consts.SeeAllCallback))
 		botHandler.HandleCallbackQuery(handler.Add(), th.CallbackDataEqual(consts.AddCallback))
 		botHandler.HandleCallbackQuery(handler.Menu(), th.CallbackDataEqual(consts.MenuCallback))
-		botHandler.HandleCallbackQuery(handler.Delete(), th.AnyCallbackQuery())
+		botHandler.HandleCallbackQuery(handler.AnyCallbackRouter(), th.AnyCallbackQuery())
 
 		// start listening
 

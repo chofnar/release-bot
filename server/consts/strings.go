@@ -5,7 +5,7 @@ const (
 
 	AddRepoMessage = "Add a repo"
 
-	AboutMessage = "The bot will ignore prereleases as of 21 April 2023\nFind my source code at github.com/chofnar/release-bot\nThe bot is based on the Telegram API implementation in Go made by Artem Yadelskyi: https://github.com/mymmrac/telego\nFor suggestions and issues, contact the creator of the bot at catalin.hofnar@gmail.com"
+	AboutMessage = "Find my source code at github.com/chofnar/release-bot\nThe bot is based on the Telegram API implementation in Go made by Artem Yadelskyi: https://github.com/mymmrac/telego\nFor suggestions and issues, contact the creator of the bot at catalin.hofnar@gmail.com"
 
 	StartMessage = "Pick one of the options below"
 
@@ -17,11 +17,14 @@ const (
 
 	InvalidRepoMessage = "Error: Invalid repo. Send a message containing your repo in one of the following formats: user/repo, https://github.com/user/repo"
 
-	ShowingAllReposMessage = "Here's all your added repos with their releases"
+	ShowingAllReposMessage = "Here's all your added repos with their releases. The third button being active means you will be notified of prereleases for the repo."
 
 	ShowingAllReposButNoneFoundMessage = "There are no watched repos. Add one?"
 
 	DelteRepoEmoji = "🗑️"
+
+	PreReleasesActive   = "Pre: ✔️"
+	PreReleasesInactive = "Pre: ❌"
 
 	// Very creative
 	Yes = "Yes"
@@ -37,4 +40,6 @@ const (
 	RepoNotFound = "I could not find the repo. Try again?"
 
 	CheckRepo = "Check it out"
+
+	OperationPrefix = "OP_"
 )

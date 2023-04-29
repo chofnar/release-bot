@@ -16,7 +16,7 @@ func StartMessage(chatID int64) *telego.SendMessageParams {
 	return tu.Message(tu.ID(chatID), consts.StartMessage).WithReplyMarkup(consts.StartKeyboard)
 }
 
-func UpdateMessage(repository repo.RepoWithChatID) *telego.SendMessageParams {
+func UpdateMessage(repository repo.RepoWithChatID, isPre bool) *telego.SendMessageParams {
 	currentRow := make([]telego.InlineKeyboardButton, 1)
 
 	kbd := telego.InlineKeyboardMarkup{
@@ -37,7 +37,11 @@ func UpdateMessage(repository repo.RepoWithChatID) *telego.SendMessageParams {
 
 	intID, _ := strconv.Atoi(repository.ChatID)
 
-	return tu.Message(tu.ID(int64(intID)), "New release: "+repository.Name+" : "+repository.CurrentReleaseTagName).WithReplyMarkup(&kbd)
+	pre := ""
+	if isPre {
+		pre = "pre"
+	}
+	return tu.Message(tu.ID(int64(intID)), "New "+pre+"release: "+repository.Name+" : "+repository.CurrentReleaseTagName).WithReplyMarkup(&kbd)
 }
 
 func EditedStartMessage(chatID int64, messageID int) *telego.EditMessageTextParams {
@@ -93,7 +97,7 @@ func SeeAllReposMarkup(chatID int64, messageID int, database *database.Database)
 	rows := make([][]telego.InlineKeyboardButton, len(repoList))
 
 	for index, repo := range repoList {
-		currentRow := make([]telego.InlineKeyboardButton, 3)
+		currentRow := make([]telego.InlineKeyboardButton, 4)
 
 		repoNameButton := telego.InlineKeyboardButton{
 			Text: repo.Name,
@@ -107,11 +111,23 @@ func SeeAllReposMarkup(chatID int64, messageID int, database *database.Database)
 		}
 		currentRow[1] = releaseButton
 
+		notifyPre := consts.PreReleasesInactive
+		newVal := "T"
+		if repo.ShouldNotifyPrerelease {
+			notifyPre = consts.PreReleasesActive
+			newVal = "F"
+		}
+		preReleaseNotifyButton := telego.InlineKeyboardButton{
+			Text:         notifyPre,
+			CallbackData: consts.OperationPrefix + newVal + "_" + repo.RepoID,
+		}
+		currentRow[2] = preReleaseNotifyButton
+
 		deleteButton := telego.InlineKeyboardButton{
 			Text:         consts.DelteRepoEmoji,
 			CallbackData: repo.RepoID,
 		}
-		currentRow[2] = deleteButton
+		currentRow[3] = deleteButton
 
 		rows[index] = currentRow
 	}
@@ -176,5 +192,10 @@ func RepoNotFoundMessage(chatID int64) *telego.SendMessageParams {
 
 func DeleteRepo(chatID int64, repoID string, database *database.Database) error {
 	err := (*database).RemoveRepo(fmt.Sprint(chatID), repoID)
+	return err
+}
+
+func SetPreReleaseRetrieve(chatID int64, repoID string, newValue bool, database *database.Database) error {
+	err := (*database).SetPreReleaseRetrieve(fmt.Sprint(chatID), repoID, newValue)
 	return err
 }

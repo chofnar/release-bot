@@ -8,6 +8,7 @@ import (
 
 	"github.com/chofnar/release-bot/database"
 	"github.com/chofnar/release-bot/errors"
+	"github.com/chofnar/release-bot/server/consts"
 	"github.com/chofnar/release-bot/server/messages"
 	"github.com/chofnar/release-bot/server/repo"
 	"github.com/hasura/go-graphql-client"
@@ -203,8 +204,27 @@ func (bh BehaviorHandler) DeleteRepo(chatID int64, messageID int, data string) e
 	return bh.SeeAll(chatID, messageID)
 }
 
-func (bh BehaviorHandler) newUpdate(repository repo.RepoWithChatID) error {
-	_, err := bh.Bot.SendMessage(messages.UpdateMessage(repository))
+func (bh BehaviorHandler) FlipPreRelease(chatID int64, messageID int, repoIDwithOP string) error {
+	repoIDwithNewVal := strings.TrimPrefix(repoIDwithOP, consts.OperationPrefix)
+
+	newValStr := repoIDwithNewVal[0]
+	newVal := false
+	if newValStr == byte('T') {
+		newVal = true
+	}
+
+	repoID := repoIDwithNewVal[2:]
+
+	err := messages.SetPreReleaseRetrieve(chatID, repoID, newVal, &bh.DB)
+	if err != nil {
+		return err
+	}
+
+	return bh.SeeAll(chatID, messageID)
+}
+
+func (bh BehaviorHandler) newUpdate(repository repo.RepoWithChatID, isPre bool) error {
+	_, err := bh.Bot.SendMessage(messages.UpdateMessage(repository, isPre))
 	return err
 }
 
@@ -228,7 +248,7 @@ func (bh BehaviorHandler) UpdateRepos() []erroredRepo {
 			continue
 		}
 
-		if newlyRetrievedRepo.CurrentReleaseID != repository.CurrentReleaseID && !newlyRetrievedRepo.IsPrerelease {
+		if newlyRetrievedRepo.CurrentReleaseID != repository.CurrentReleaseID && (!newlyRetrievedRepo.IsPrerelease || (newlyRetrievedRepo.IsPrerelease && repository.ShouldNotifyPrerelease)) {
 			withChatID := repo.RepoWithChatID{
 				Repo:   newlyRetrievedRepo,
 				ChatID: repository.ChatID,
@@ -239,11 +259,12 @@ func (bh BehaviorHandler) UpdateRepos() []erroredRepo {
 				continue
 			}
 
-			err = bh.newUpdate(withChatID)
+			err = bh.newUpdate(withChatID, newlyRetrievedRepo.IsPrerelease)
 			if err != nil {
 				failedRepos = append(failedRepos, erroredRepo{Err: err, Repo: newlyRetrievedRepo})
 				continue
 			}
+
 		}
 	}
 

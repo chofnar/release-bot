@@ -1,7 +1,10 @@
 package telegohandlers
 
 import (
+	"strings"
+
 	"github.com/chofnar/release-bot/server/behaviors"
+	"github.com/chofnar/release-bot/server/consts"
 	"github.com/mymmrac/telego"
 	"github.com/mymmrac/telego/telegohandler"
 	"go.uber.org/zap"
@@ -80,11 +83,18 @@ func (hc *Handler) Add() telegohandler.CallbackQueryHandler {
 	}
 }
 
-func (hc *Handler) Delete() telegohandler.CallbackQueryHandler {
+func (hc *Handler) AnyCallbackRouter() telegohandler.CallbackQueryHandler {
 	return func(bot *telego.Bot, query telego.CallbackQuery) {
-		err := hc.BehaviorHandler.DeleteRepo(query.Message.Chat.ID, query.Message.MessageID, query.Data)
-		if err != nil {
-			hc.Logger.Error(err)
+		if strings.HasPrefix(query.Data, consts.OperationPrefix) {
+			err := hc.BehaviorHandler.FlipPreRelease(query.Message.Chat.ID, query.Message.MessageID, query.Data)
+			if err != nil {
+				hc.Logger.Error(err)
+			}
+		} else {
+			err := hc.BehaviorHandler.DeleteRepo(query.Message.Chat.ID, query.Message.MessageID, query.Data)
+			if err != nil {
+				hc.Logger.Error(err)
+			}
 		}
 	}
 }
