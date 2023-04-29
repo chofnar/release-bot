@@ -206,7 +206,7 @@ func (up UpdatePath) UpdateRepos(behaviorHandler *behaviors.BehaviorHandler, log
 
 		if len(failedRepoErrors) != 0 {
 			w.Write(marshaledErrors)
-			logger.Error(marshaledErrors)
+			logger.Error(failedRepoErrors)
 			return
 		}
 
