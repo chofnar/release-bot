@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +16,7 @@ import (
 	"github.com/chofnar/release-bot/server/behaviors"
 	botConfig "github.com/chofnar/release-bot/server/config"
 	"github.com/chofnar/release-bot/server/consts"
+	"github.com/chofnar/release-bot/server/logger"
 	myHandlers "github.com/chofnar/release-bot/server/telegohandlers"
 	th "github.com/mymmrac/telego/telegohandler"
 
@@ -34,12 +34,7 @@ func Initialize(logger zap.SugaredLogger) (*botConfig.BotConfig, database.Databa
 }
 
 func Start() {
-	unsugared, err := zap.NewDevelopment()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	logger := unsugared.Sugar()
+	logger := logger.New()
 	botConf, db := Initialize(*logger)
 
 	bot, err := telego.NewBot(botConf.TelegramToken, telego.WithLogger(logger))
@@ -105,26 +100,22 @@ func Start() {
 		panic(err)
 	}
 
-	if botConf.UseUpdateLoop != "" {
-		go updateLoop(context.Background(), updates, &behaviorHandler, *logger)
-	} else {
-		// register handlers
-		botHandler.Handle(handler.Start(), th.CommandEqual("start"))
-		botHandler.Handle(handler.About(), th.CommandEqual("about"))
-		botHandler.Handle(handler.UnknownOrSent(), th.AnyMessageWithText())
+	// register handlers
+	botHandler.Handle(handler.Start(), th.CommandEqual("start"))
+	botHandler.Handle(handler.About(), th.CommandEqual("about"))
+	botHandler.Handle(handler.UnknownOrSent(), th.AnyMessageWithText())
 
-		// Callback queries
-		botHandler.HandleCallbackQuery(handler.SeeAll(), th.CallbackDataEqual(consts.SeeAllCallback))
-		botHandler.HandleCallbackQuery(handler.Add(), th.CallbackDataEqual(consts.AddCallback))
-		botHandler.HandleCallbackQuery(handler.Menu(), th.CallbackDataEqual(consts.MenuCallback))
-		botHandler.HandleCallbackQuery(handler.AnyCallbackRouter(), th.AnyCallbackQuery())
+	// Callback queries
+	botHandler.HandleCallbackQuery(handler.SeeAll(), th.CallbackDataEqual(consts.SeeAllCallback))
+	botHandler.HandleCallbackQuery(handler.Add(), th.CallbackDataEqual(consts.AddCallback))
+	botHandler.HandleCallbackQuery(handler.Menu(), th.CallbackDataEqual(consts.MenuCallback))
+	botHandler.HandleCallbackQuery(handler.AnyCallbackRouter(), th.AnyCallbackQuery())
 
-		// start listening
+	// start listening
 
-		go func() {
-			botHandler.Start()
-		}()
-	}
+	go func() {
+		botHandler.Start()
+	}()
 
 	go func() {
 		err = bot.StartWebhook("0.0.0.0:" + botConf.Port)
@@ -189,85 +180,5 @@ func (up UpdatePath) UpdateRepos(behaviorHandler *behaviors.BehaviorHandler, log
 		msg := "Repos updated succesfully with no funky business"
 		logger.Info(msg)
 		w.Write([]byte(msg))
-	}
-}
-
-func updateLoop(ctx context.Context, updates <-chan telego.Update, behaviorHandler *behaviors.BehaviorHandler, logger zap.SugaredLogger) {
-	awaitingAddRepo := map[int64]struct{}{}
-	type void struct{}
-	var set void
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case update := <-updates:
-			var err error
-
-			// command
-			if update.Message != nil {
-				chatID := update.Message.Chat.ID
-
-				switch update.Message.Text {
-				case "/start":
-					err = behaviorHandler.Start(chatID)
-					if err != nil {
-						logger.Error(err)
-					}
-
-				case "/about":
-					err = behaviorHandler.About(chatID)
-					if err != nil {
-						logger.Error(err)
-					}
-
-				default:
-					if _, ok := awaitingAddRepo[chatID]; !ok {
-						err = behaviorHandler.UnknownCommand(chatID)
-						if err != nil {
-							logger.Error(err)
-						}
-					} else {
-						err = behaviorHandler.SentRepo(update.Message.Text, update.Message.MessageID, chatID)
-						if err != nil {
-							logger.Error(err)
-						}
-					}
-				}
-			} else {
-				chatID := update.CallbackQuery.Message.Chat.ID
-				messageID := update.CallbackQuery.Message.MessageID
-
-				switch update.CallbackQuery.Data {
-				case consts.SeeAllCallback:
-					err := behaviorHandler.SeeAll(chatID, messageID)
-					if err != nil {
-						logger.Error(err)
-					}
-
-				case consts.AddCallback:
-					err = behaviorHandler.Add(chatID, messageID)
-					if err != nil {
-						logger.Error(err)
-					}
-					awaitingAddRepo[chatID] = set
-
-				case consts.MenuCallback:
-					err := behaviorHandler.Menu(chatID, messageID)
-					if err != nil {
-						logger.Error(err)
-					}
-					delete(awaitingAddRepo, chatID)
-
-				//TODO: can probably just use the name now
-				// name hash callback, delete
-				default:
-					err = behaviorHandler.DeleteRepo(chatID, messageID, update.CallbackQuery.Data)
-					if err != nil {
-						logger.Error(err)
-					}
-				}
-			}
-		}
 	}
 }

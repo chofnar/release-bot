@@ -5,7 +5,7 @@ const (
 
 	AddRepoMessage = "Add a repo"
 
-	AboutMessage = "Find my source code at github.com/chofnar/release-bot\nThe bot is based on the Telegram API implementation in Go made by Artem Yadelskyi: https://github.com/mymmrac/telego\nFor suggestions and issues, contact the creator of the bot at catalin.hofnar@gmail.com"
+	AboutMessage = "Find my source code at github.com/chofnar/release-bot\nConsider supporting this project :) https://www.buymeacoffee.com/chofnar\nThe bot is based on the Telegram API implementation in Go made by Artem Yadelskyi: https://github.com/mymmrac/telego\nFor suggestions and issues, contact the creator of the bot at catalin.hofnar@gmail.com"
 
 	StartMessage = "Pick one of the options below"
 
