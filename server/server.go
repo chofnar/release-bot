@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +16,7 @@ import (
 	"github.com/chofnar/release-bot/server/behaviors"
 	botConfig "github.com/chofnar/release-bot/server/config"
 	"github.com/chofnar/release-bot/server/consts"
+	"github.com/chofnar/release-bot/server/logger"
 	myHandlers "github.com/chofnar/release-bot/server/telegohandlers"
 	th "github.com/mymmrac/telego/telegohandler"
 
@@ -34,12 +34,7 @@ func Initialize(logger zap.SugaredLogger) (*botConfig.BotConfig, database.Databa
 }
 
 func Start() {
-	unsugared, err := zap.NewDevelopment()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	logger := unsugared.Sugar()
+	logger := logger.New()
 	botConf, db := Initialize(*logger)
 
 	bot, err := telego.NewBot(botConf.TelegramToken, telego.WithLogger(logger))
