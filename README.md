@@ -7,6 +7,8 @@
 This is a Telegram bot that monitors the releases of given repos, sending messages upon a new release. 
 It uses [mymmrac's Telegram Bot API implementation in Go](https://github.com/mymmrac/telego).
 
+Want to support this project? [Consider donating me a cup of coffee!](https://www.buymeacoffee.com/chofnar)
+
 To store all the users and their repos, the bot uses AWS DynamoDB.
 
 To access the details of the repos, the bot queries the Github GraphQL endpoint.
