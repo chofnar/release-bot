@@ -127,6 +127,7 @@ func (db *Driver) AddRepo(chatID string, details *repo.Repo) error {
 			"repoLink":              &types.AttributeValueMemberS{Value: details.Link},
 			"currentReleaseTagName": &types.AttributeValueMemberS{Value: details.Release.CurrentReleaseTagName},
 			"currentReleaseID":      &types.AttributeValueMemberS{Value: details.Release.CurrentReleaseID},
+			"shouldPre":             &types.AttributeValueMemberBOOL{Value: false},
 		},
 	})
 	if err != nil {
@@ -181,6 +182,22 @@ func (db *Driver) UpdateEntry(repo repo.RepoWithChatID) error {
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":releaseID":      &types.AttributeValueMemberS{Value: repo.CurrentReleaseID},
 			":releaseTagName": &types.AttributeValueMemberS{Value: repo.CurrentReleaseTagName},
+		},
+		TableName: &db.tableName,
+	})
+
+	return err
+}
+
+func (db *Driver) SetPreReleaseRetrieve(chatID, repoID string, newValue bool) error {
+	_, err := db.client.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		Key: map[string]types.AttributeValue{
+			"chatID": &types.AttributeValueMemberS{Value: fmt.Sprint(chatID)},
+			"repoID": &types.AttributeValueMemberS{Value: repoID},
+		},
+		UpdateExpression: aws.String("set shouldPre = :newValuePreReleaseRetrieve"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":newValuePreReleaseRetrieve": &types.AttributeValueMemberBOOL{Value: newValue},
 		},
 		TableName: &db.tableName,
 	})
