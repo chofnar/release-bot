@@ -8,7 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
-	"time"
+	"strconv"
 
 	"github.com/chofnar/release-bot/database"
 	databaseLoader "github.com/chofnar/release-bot/database/loader"
@@ -25,6 +25,8 @@ import (
 	"github.com/mymmrac/telego"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
+
+	mapset "github.com/deckarep/golang-set/v2"
 )
 
 func Initialize(logger zap.SugaredLogger) (*botConfig.BotConfig, database.Database) {
@@ -81,8 +83,8 @@ func Start() {
 	}
 
 	mux := http.NewServeMux()
-	tp := TimePath{}
-	mux.Handle("/time", tp)
+	stats := StatsPath{}
+	mux.Handle("/stats", stats.ServeHTTP(&behaviorHandler, *logger))
 	up := UpdatePath{}
 	mux.Handle("/updateRepos", up.UpdateRepos(&behaviorHandler, *logger))
 
@@ -136,11 +138,42 @@ func Start() {
 	<-nctx.Done()
 }
 
-type TimePath struct{}
+type StatsPath struct{}
 
-func (hp TimePath) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	tm := time.Now().Format(time.UnixDate)
-	w.Write([]byte("The time is: " + tm))
+func (hp StatsPath) ServeHTTP(behaviorHandler *behaviors.BehaviorHandler, logger zap.SugaredLogger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
+			msg := "could not read request body"
+			logger.Error(msg)
+			w.Write([]byte(msg))
+			return
+		}
+
+		bodyStr := string(b)
+
+		if bodyStr != os.Getenv("SUPER_SECRET_TOKEN") {
+			w.Write([]byte(errors.ErrUpdateIncorrectToken.Error()))
+			logger.Error(errors.ErrUpdateIncorrectToken)
+			return
+		}
+
+		repos, err := behaviorHandler.DB.AllRepos()
+		if err != nil {
+			w.Write([]byte("Something went wrong querying the database: " + err.Error()))
+			logger.Error([]byte("Something went wrong querying the database: " + err.Error()))
+			return
+		}
+
+		uniqueUsersSet, uniqueReposSet := mapset.NewSet[string](), mapset.NewSet[string]()
+
+		for _, repo := range repos {
+			uniqueUsersSet.Add(repo.ChatID)
+			uniqueReposSet.Add(repo.RepoID)
+		}
+
+		w.Write([]byte("Currently serving " + strconv.Itoa(uniqueUsersSet.Cardinality()) + " users, watching " + strconv.Itoa(uniqueReposSet.Cardinality()) + " unique repos"))
+	}
 }
 
 type UpdatePath struct{}
