@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.18.0
 	github.com/deckarep/golang-set/v2 v2.3.0
 	github.com/hasura/go-graphql-client v0.9.2
-	github.com/mymmrac/telego v0.22.1
+	github.com/mymmrac/telego v0.23.0
 )
 
 require (
