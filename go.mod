@@ -40,7 +40,7 @@ require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.18.21
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.22
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.6
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.7
 	github.com/fasthttp/router v1.4.18 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/klauspost/compress v1.16.5 // indirect
