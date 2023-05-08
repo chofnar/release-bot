@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.18.0
 	github.com/deckarep/golang-set/v2 v2.3.0
 	github.com/hasura/go-graphql-client v0.9.2
-	github.com/mymmrac/telego v0.22.1
+	github.com/mymmrac/telego v0.24.0
 )
 
 require (
@@ -46,7 +46,7 @@ require (
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.46.0 // indirect
+	github.com/valyala/fasthttp v1.47.0 // indirect
 	go.uber.org/zap v1.24.0
 	golang.org/x/oauth2 v0.7.0
 )
