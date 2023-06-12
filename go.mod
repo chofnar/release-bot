@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.18.0
 	github.com/deckarep/golang-set/v2 v2.3.0
 	github.com/hasura/go-graphql-client v0.9.2
-	github.com/mymmrac/telego v0.22.1
+	github.com/mymmrac/telego v0.25.0
 )
 
 require (
@@ -41,12 +41,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.21
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.22
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.6
-	github.com/fasthttp/router v1.4.18 // indirect
+	github.com/fasthttp/router v1.4.19 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.46.0 // indirect
+	github.com/valyala/fasthttp v1.47.0 // indirect
 	go.uber.org/zap v1.24.0
 	golang.org/x/oauth2 v0.7.0
 )
