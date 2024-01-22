@@ -247,9 +247,11 @@ func (bh BehaviorHandler) UpdateRepos(logger zap.SugaredLogger) []erroredRepo {
 		if err != nil {
 			failedRepos = append(failedRepos, erroredRepo{Err: err, Repo: newlyRetrievedRepo})
 			// Could not resolve
-			errdb := bh.DB.RemoveRepo(repository.ChatID, repository.RepoID)
-			if errdb != nil {
-				logger.Error(errdb)
+			if strings.Contains(err.Error(), "Could not resolve to a Repository with the name") {
+				errdb := bh.DB.RemoveRepo(repository.ChatID, repository.RepoID)
+				if errdb != nil {
+					logger.Error(errdb)
+				}
 			}
 			continue
 		}
