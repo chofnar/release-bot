@@ -161,8 +161,12 @@ func (hp StatsPath) ServeHTTP(behaviorHandler *behaviors.BehaviorHandler, logger
 
 		repos, err := behaviorHandler.DB.AllRepos()
 		if err != nil {
-			w.Write([]byte("Something went wrong querying the database: " + err.Error()))
-			logger.Error([]byte("Something went wrong querying the database: " + err.Error()))
+			msg := "Something went wrong querying the database: " + err.Error()
+			logger.Error([]byte(msg))
+			_, writeErr := w.Write([]byte(msg))
+			if writeErr != nil {
+				logger.Error(writeErr)
+			}
 			return
 		}
 
@@ -173,7 +177,10 @@ func (hp StatsPath) ServeHTTP(behaviorHandler *behaviors.BehaviorHandler, logger
 			uniqueReposSet.Add(repo.RepoID)
 		}
 
-		w.Write([]byte("Currently serving " + strconv.Itoa(uniqueUsersSet.Cardinality()) + " users, watching " + strconv.Itoa(uniqueReposSet.Cardinality()) + " unique repos"))
+		_, writeErr := w.Write([]byte("Currently serving " + strconv.Itoa(uniqueUsersSet.Cardinality()) + " users, watching " + strconv.Itoa(uniqueReposSet.Cardinality()) + " unique repos"))
+		if writeErr != nil {
+			logger.Error(writeErr)
+		}
 	}
 }
 
@@ -186,34 +193,49 @@ func (up UpdatePath) UpdateRepos(behaviorHandler *behaviors.BehaviorHandler, log
 		if err != nil {
 			msg := "could not read request body"
 			logger.Error(msg)
-			w.Write([]byte(msg))
+			_, writeErr := w.Write([]byte(msg))
+			if writeErr != nil {
+				logger.Error(writeErr)
+			}
 			return
 		}
 
 		bodyStr := string(b)
 
 		if bodyStr != os.Getenv("SUPER_SECRET_TOKEN") {
-			w.Write([]byte(errors.ErrUpdateIncorrectToken.Error()))
 			logger.Error(errors.ErrUpdateIncorrectToken)
+			_, writeErr := w.Write([]byte(errors.ErrUpdateIncorrectToken.Error()))
+			if writeErr != nil {
+				logger.Error(writeErr)
+			}
 			return
 		}
 
 		failedRepoErrors := behaviorHandler.UpdateRepos(logger)
 		marshaledErrors, err := json.Marshal(failedRepoErrors)
 		if err != nil {
-			w.Write([]byte(err.Error()))
 			logger.Error(err)
+			_, writeErr := w.Write([]byte(err.Error()))
+			if writeErr != nil {
+				logger.Error(writeErr)
+			}
 			return
 		}
 
 		if len(failedRepoErrors) != 0 {
-			w.Write(marshaledErrors)
 			logger.Error(failedRepoErrors)
+			_, writeErr := w.Write(marshaledErrors)
+			if writeErr != nil {
+				logger.Error(writeErr)
+			}
 			return
 		}
 
 		msg := "Repos updated succesfully with no funky business"
 		logger.Info(msg)
-		w.Write([]byte(msg))
+		_, writeErr := w.Write([]byte(msg))
+		if writeErr != nil {
+			logger.Error(writeErr)
+		}
 	}
 }
