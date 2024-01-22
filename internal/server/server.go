@@ -237,7 +237,7 @@ func (up UpdatePath) UpdateRepos(behaviorHandler *behaviors.BehaviorHandler, log
 			return
 		}
 
-		msg := "Repos updated succesfully with no funky business"
+		msg := "Repos updated successfully with no funky business"
 		logger.Info(msg)
 		_, writeErr := w.Write([]byte(msg))
 		if writeErr != nil {

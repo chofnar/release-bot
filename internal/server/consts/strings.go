@@ -31,9 +31,9 @@ const (
 
 	No = "No"
 
-	AddedRepoSuccesfully = "Repo added succesfully. Add another?"
+	AddedRepoSuccessfully = "Repo added successfully. Add another?"
 
-	AddedRepoSuccesfullyNoReleases = "Repo added succesfully but it has no releases. I will ping you when there is one. Add another?"
+	AddedRepoSuccessfullyNoReleases = "Repo added successfully but it has no releases. I will ping you when there is one. Add another?"
 
 	RepoExists = "Repo already exists in your watched list. Try another?"
 

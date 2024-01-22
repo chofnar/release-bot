@@ -86,7 +86,6 @@ func SeeAllReposMarkup(chatID int64, messageID int, database *database.Database)
 	}
 
 	if len(repoList) == 0 {
-
 		return &telego.EditMessageReplyMarkupParams{
 			ChatID:      tu.ID(chatID),
 			MessageID:   messageID,
@@ -158,18 +157,18 @@ func InvalidRepoMessage(chatID int64) *telego.SendMessageParams {
 	}
 }
 
-func SuccesfullyAddedRepoMessage(chatID int64) *telego.SendMessageParams {
+func SuccessfullyAddedRepoMessage(chatID int64) *telego.SendMessageParams {
 	return &telego.SendMessageParams{
 		ChatID:      tu.ID(chatID),
-		Text:        consts.AddedRepoSuccesfully,
+		Text:        consts.AddedRepoSuccessfully,
 		ReplyMarkup: consts.AddAnotherRepoKeyboard,
 	}
 }
 
-func SuccesfullyAddedRepoWithoutReleasesMessage(chatID int64) *telego.SendMessageParams {
+func SuccessfullyAddedRepoWithoutReleasesMessage(chatID int64) *telego.SendMessageParams {
 	return &telego.SendMessageParams{
 		ChatID:      tu.ID(chatID),
-		Text:        consts.AddedRepoSuccesfullyNoReleases,
+		Text:        consts.AddedRepoSuccessfullyNoReleases,
 		ReplyMarkup: consts.AddAnotherRepoKeyboard,
 	}
 }
