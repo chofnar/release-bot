@@ -76,12 +76,12 @@ func (bh BehaviorHandler) SentRepo(messageText string, messageID int, chatID int
 		}
 
 		if hasReleases {
-			_, err = bh.Bot.SendMessage(messages.SuccesfullyAddedRepoMessage(chatID))
+			_, err = bh.Bot.SendMessage(messages.SuccessfullyAddedRepoMessage(chatID))
 			if err != nil {
 				return err
 			}
 		} else {
-			_, err = bh.Bot.SendMessage(messages.SuccesfullyAddedRepoWithoutReleasesMessage(chatID))
+			_, err = bh.Bot.SendMessage(messages.SuccessfullyAddedRepoWithoutReleasesMessage(chatID))
 			if err != nil {
 				return err
 			}
