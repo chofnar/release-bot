@@ -1,4 +1,4 @@
-FROM golang:buster as builder
+FROM golang:1.21.6-bullseye as builder
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN go build ./cmd/main.go -mod=readonly -v -o bot
+RUN go build -mod=readonly -v -o bot
 
 FROM debian:buster-slim
 RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
