@@ -1,8 +1,8 @@
 package loader
 
 import (
-	"github.com/chofnar/release-bot/database"
-	"github.com/chofnar/release-bot/database/factory"
+	"github.com/chofnar/release-bot/internal/database"
+	"github.com/chofnar/release-bot/internal/database/factory"
 	"go.uber.org/zap"
 )
 

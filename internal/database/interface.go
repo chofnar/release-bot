@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/chofnar/release-bot/server/repo"
+	"github.com/chofnar/release-bot/internal/server/repo"
 )
 
 type Database interface {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/chofnar/release-bot/server"
+	"github.com/chofnar/release-bot/internal/server"
 )
 
 func main() {

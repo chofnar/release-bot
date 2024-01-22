@@ -6,11 +6,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/chofnar/release-bot/database"
-	"github.com/chofnar/release-bot/errors"
-	"github.com/chofnar/release-bot/server/consts"
-	"github.com/chofnar/release-bot/server/messages"
-	"github.com/chofnar/release-bot/server/repo"
+	"github.com/chofnar/release-bot/internal/database"
+	"github.com/chofnar/release-bot/internal/errors"
+	"github.com/chofnar/release-bot/internal/server/consts"
+	"github.com/chofnar/release-bot/internal/server/messages"
+	"github.com/chofnar/release-bot/internal/server/repo"
 	"github.com/hasura/go-graphql-client"
 	"github.com/mymmrac/telego"
 )

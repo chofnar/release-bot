@@ -6,21 +6,20 @@ import (
 )
 
 func New() *zap.SugaredLogger {
-    loggerCfg := &zap.Config{
+	loggerCfg := &zap.Config{
 		Level:            zap.NewAtomicLevelAt(zapcore.InfoLevel),
 		Encoding:         "json",
 		EncoderConfig:    encoderConfig,
 		OutputPaths:      []string{"stdout"},
 		ErrorOutputPaths: []string{"stderr"},
-    }
+	}
 
-    plain, err := loggerCfg.Build(zap.AddStacktrace(zap.DPanicLevel))
-    if err != nil {
+	plain, err := loggerCfg.Build(zap.AddStacktrace(zap.DPanicLevel))
+	if err != nil {
 		plain = zap.NewNop()
 	}
 	return plain.Sugar()
 }
-
 
 var encoderConfig = zapcore.EncoderConfig{
 	TimeKey:        "time",

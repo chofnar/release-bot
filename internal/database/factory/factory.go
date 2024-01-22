@@ -1,8 +1,8 @@
 package factory
 
 import (
-	"github.com/chofnar/release-bot/database"
-	"github.com/chofnar/release-bot/database/dynamodb"
+	"github.com/chofnar/release-bot/internal/database"
+	"github.com/chofnar/release-bot/internal/database/dynamodb"
 	"go.uber.org/zap"
 )
 

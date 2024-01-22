@@ -3,8 +3,8 @@ package telegohandlers
 import (
 	"strings"
 
-	"github.com/chofnar/release-bot/server/behaviors"
-	"github.com/chofnar/release-bot/server/consts"
+	"github.com/chofnar/release-bot/internal/server/behaviors"
+	"github.com/chofnar/release-bot/internal/server/consts"
 	"github.com/mymmrac/telego"
 	"github.com/mymmrac/telego/telegohandler"
 	"go.uber.org/zap"
