@@ -161,7 +161,7 @@ func (hp StatsPath) ServeHTTP(behaviorHandler *behaviors.BehaviorHandler, logger
 
 		repos, err := behaviorHandler.DB.AllRepos()
 		if err != nil {
-			msg := "Something went wrong querying the database: " + err.Error())
+			msg := "Something went wrong querying the database: " + err.Error()
 			logger.Error([]byte(msg))
 			_, writeErr := w.Write([]byte(msg))
 			if writeErr != nil {
