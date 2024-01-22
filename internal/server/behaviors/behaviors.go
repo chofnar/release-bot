@@ -13,6 +13,7 @@ import (
 	"github.com/chofnar/release-bot/internal/server/repo"
 	"github.com/hasura/go-graphql-client"
 	"github.com/mymmrac/telego"
+	"go.uber.org/zap"
 )
 
 type BehaviorHandler struct {
@@ -45,7 +46,7 @@ func (bh BehaviorHandler) UnknownCommand(chatID int64) error {
 func (bh BehaviorHandler) SentRepo(messageText string, messageID int, chatID int64) error {
 	owner, repoName, valid := bh.validateInput(messageText)
 	if valid {
-		repoToAdd, err := bh.validateAndBuildRepo(owner, repoName)
+		repoToAdd, err := bh.validateAndRetrieveRepo(owner, repoName)
 		hasReleases := true
 		if err != nil {
 			if err == errors.ErrNoReleases {
@@ -111,7 +112,7 @@ func (bh BehaviorHandler) validateInput(message string) (owner, repo string, isV
 	return
 }
 
-func (bh BehaviorHandler) validateAndBuildRepo(owner, name string) (repo.Repo, error) {
+func (bh BehaviorHandler) validateAndRetrieveRepo(owner, name string) (repo.Repo, error) {
 	variables := map[string]interface{}{
 		"name":  name,
 		"owner": owner,
@@ -233,7 +234,7 @@ type erroredRepo struct {
 	Repo repo.Repo `json:"repo,omitempty"`
 }
 
-func (bh BehaviorHandler) UpdateRepos() []erroredRepo {
+func (bh BehaviorHandler) UpdateRepos(logger zap.SugaredLogger) []erroredRepo {
 	repos, err := bh.DB.AllRepos()
 	failedRepos := []erroredRepo{}
 	if err != nil {
@@ -242,9 +243,14 @@ func (bh BehaviorHandler) UpdateRepos() []erroredRepo {
 	}
 
 	for _, repository := range repos {
-		newlyRetrievedRepo, err := bh.validateAndBuildRepo(repository.Owner, repository.Name)
+		newlyRetrievedRepo, err := bh.validateAndRetrieveRepo(repository.Owner, repository.Name)
 		if err != nil {
 			failedRepos = append(failedRepos, erroredRepo{Err: err, Repo: newlyRetrievedRepo})
+			// Could not resolve
+			errdb := bh.DB.RemoveRepo(repository.ChatID, repository.RepoID)
+			if errdb != nil {
+				logger.Error(errdb)
+			}
 			continue
 		}
 
@@ -253,6 +259,7 @@ func (bh BehaviorHandler) UpdateRepos() []erroredRepo {
 				Repo:   newlyRetrievedRepo,
 				ChatID: repository.ChatID,
 			}
+
 			err = bh.DB.UpdateEntry(withChatID)
 			if err != nil {
 				failedRepos = append(failedRepos, erroredRepo{Err: err, Repo: newlyRetrievedRepo})
@@ -261,6 +268,17 @@ func (bh BehaviorHandler) UpdateRepos() []erroredRepo {
 
 			err = bh.newUpdate(withChatID, newlyRetrievedRepo.IsPrerelease)
 			if err != nil {
+				// clean up orphaned repos:
+				// 400 chat not found, 403 user blocked the bot
+				if strings.Contains(err.Error(), "Forbidden: bot was blocked by the user") || strings.Contains(err.Error(), "Bad Request: chat not found") {
+					errdb := bh.DB.RemoveRepo(repository.ChatID, repository.RepoID)
+					if errdb != nil {
+						logger.Error(errdb)
+					}
+					continue
+				}
+
+				// other
 				failedRepos = append(failedRepos, erroredRepo{Err: err, Repo: newlyRetrievedRepo})
 				continue
 			}

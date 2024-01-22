@@ -142,6 +142,7 @@ type StatsPath struct{}
 
 func (hp StatsPath) ServeHTTP(behaviorHandler *behaviors.BehaviorHandler, logger zap.SugaredLogger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		defer logger.Sync()
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			msg := "could not read request body"
@@ -180,6 +181,7 @@ type UpdatePath struct{}
 
 func (up UpdatePath) UpdateRepos(behaviorHandler *behaviors.BehaviorHandler, logger zap.SugaredLogger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		defer logger.Sync()
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			msg := "could not read request body"
@@ -196,7 +198,7 @@ func (up UpdatePath) UpdateRepos(behaviorHandler *behaviors.BehaviorHandler, log
 			return
 		}
 
-		failedRepoErrors := behaviorHandler.UpdateRepos()
+		failedRepoErrors := behaviorHandler.UpdateRepos(logger)
 		marshaledErrors, err := json.Marshal(failedRepoErrors)
 		if err != nil {
 			w.Write([]byte(err.Error()))
