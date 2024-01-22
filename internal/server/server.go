@@ -147,15 +147,21 @@ func (hp StatsPath) ServeHTTP(behaviorHandler *behaviors.BehaviorHandler, logger
 		if err != nil {
 			msg := "could not read request body"
 			logger.Error(msg)
-			w.Write([]byte(msg))
+			_, writeErr := w.Write([]byte(msg))
+			if writeErr != nil {
+				logger.Error(writeErr)
+			}
 			return
 		}
 
 		bodyStr := string(b)
 
 		if bodyStr != os.Getenv("SUPER_SECRET_TOKEN") {
-			w.Write([]byte(errors.ErrUpdateIncorrectToken.Error()))
 			logger.Error(errors.ErrUpdateIncorrectToken)
+			_, writeErr := w.Write([]byte(errors.ErrUpdateIncorrectToken.Error()))
+			if writeErr != nil {
+				logger.Error(writeErr)
+			}
 			return
 		}
 
