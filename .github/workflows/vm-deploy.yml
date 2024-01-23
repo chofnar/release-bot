@@ -53,4 +53,5 @@ jobs:
               -e RESET_WEBHOOK_URL=${{ secrets.RESET_WEBHOOK_URL }} \
               -e WEBHOOK_PORT=${{ secrets.WEBHOOK_PORT }} \
               -e PORT=${{ secrets.PORT }} \
+              -e BOT_TABLE_NAME=${{ secrets.BOT_TABLE_NAME }} \
               chofnar/go-release-bot:${{ github.sha }}
