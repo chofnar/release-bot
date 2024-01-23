@@ -75,8 +75,10 @@ func Start() {
 	}
 
 	if botConf.ResetWebhookUrl != "" {
+		url := botConf.WebhookSite + "/bot/" + botConf.TelegramToken
+		logger.Info("resetting webhook url to: " + botConf.WebhookSite + "/bot/TOKEN")
 		err = bot.SetWebhook(&telego.SetWebhookParams{
-			URL: botConf.WebhookSite + "/bot/" + botConf.TelegramToken,
+			URL: url,
 		})
 		if err != nil {
 			panic(err)
