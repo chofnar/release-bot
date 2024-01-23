@@ -167,8 +167,8 @@ func (bh BehaviorHandler) validateAndRetrieveRepo(owner, name string) (repo.Repo
 	}, errors.ErrNoReleases
 }
 
-func (bh BehaviorHandler) SeeAll(chatID int64, messageID int) error {
-	markup, err := messages.SeeAllReposMarkup(chatID, messageID, &bh.DB)
+func (bh BehaviorHandler) SeeRepos(chatID int64, messageID, limit, page int) error {
+	markup, err := messages.SeeReposMarkup(chatID, messageID, limit, page, &bh.DB)
 	if err != errors.ErrNoRepos && err != nil {
 		return err
 	}
@@ -202,11 +202,11 @@ func (bh BehaviorHandler) DeleteRepo(chatID int64, messageID int, data string) e
 		return err
 	}
 
-	return bh.SeeAll(chatID, messageID)
+	return bh.Menu(chatID, messageID)
 }
 
 func (bh BehaviorHandler) FlipPreRelease(chatID int64, messageID int, repoIDwithOP string) error {
-	repoIDwithNewVal := strings.TrimPrefix(repoIDwithOP, consts.OperationPrefix)
+	repoIDwithNewVal := strings.TrimPrefix(repoIDwithOP, consts.FlipOperationPrefix)
 
 	newValStr := repoIDwithNewVal[0]
 	newVal := false
@@ -221,7 +221,7 @@ func (bh BehaviorHandler) FlipPreRelease(chatID int64, messageID int, repoIDwith
 		return err
 	}
 
-	return bh.SeeAll(chatID, messageID)
+	return bh.Menu(chatID, messageID)
 }
 
 func (bh BehaviorHandler) newUpdate(repository repo.RepoWithChatID, isPre bool) error {

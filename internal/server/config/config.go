@@ -2,10 +2,12 @@ package config
 
 import (
 	"os"
+	"strconv"
 )
 
 type BotConfig struct {
 	TelegramToken, WebhookSite, Port, GithubGQLToken, ResetWebhookUrl string
+	Limit                                                             int
 }
 
 func LoadBotConfig() *BotConfig {
@@ -13,12 +15,18 @@ func LoadBotConfig() *BotConfig {
 		// TODO: implement
 		return nil
 	} else {
+		limit, err := strconv.Atoi(os.Getenv("LIMIT"))
+		if err != nil || limit == 0 {
+			panic("Limit cannot be read or is 0!")
+		}
+
 		return &BotConfig{
 			TelegramToken:   os.Getenv("TELEGRAM_BOT_TOKEN"),
 			WebhookSite:     os.Getenv("TELEGRAM_BOT_SITE_URL"),
 			Port:            os.Getenv("PORT"),
 			GithubGQLToken:  os.Getenv("GITHUB_GQL_TOKEN"),
 			ResetWebhookUrl: os.Getenv("RESET_WEBHOOK_URL"),
+			Limit:           limit,
 		}
 	}
 }

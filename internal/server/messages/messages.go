@@ -79,7 +79,7 @@ func SeeAllReposButNoneFoundMessage(chatID int64, messageID int, markup telego.I
 	}
 }
 
-func SeeAllReposMarkup(chatID int64, messageID int, database *database.Database) (*telego.EditMessageReplyMarkupParams, error) {
+func SeeReposMarkup(chatID int64, messageID, limit, page int, database *database.Database) (*telego.EditMessageReplyMarkupParams, error) {
 	repoList, err := (*database).GetRepos(fmt.Sprint(chatID))
 	if err != nil {
 		return nil, err
@@ -93,9 +93,17 @@ func SeeAllReposMarkup(chatID int64, messageID int, database *database.Database)
 		}, errors.ErrNoRepos
 	}
 
-	rows := make([][]telego.InlineKeyboardButton, len(repoList))
+	start := limit * page
+	var end int
+	if limit*page+limit < len(repoList) {
+		end = limit
+	} else {
+		end = len(repoList) - limit*page
+	}
 
-	for index, repo := range repoList {
+	rows := make([][]telego.InlineKeyboardButton, end)
+
+	for index, repo := range repoList[start : start+end] {
 		currentRow := make([]telego.InlineKeyboardButton, 4)
 
 		repoNameButton := telego.InlineKeyboardButton{
@@ -118,7 +126,7 @@ func SeeAllReposMarkup(chatID int64, messageID int, database *database.Database)
 		}
 		preReleaseNotifyButton := telego.InlineKeyboardButton{
 			Text:         notifyPre,
-			CallbackData: consts.OperationPrefix + newVal + "_" + repo.RepoID,
+			CallbackData: consts.FlipOperationPrefix + newVal + "_" + repo.RepoID,
 		}
 		currentRow[2] = preReleaseNotifyButton
 
@@ -130,6 +138,37 @@ func SeeAllReposMarkup(chatID int64, messageID int, database *database.Database)
 
 		rows[index] = currentRow
 	}
+
+	// prev/forward
+
+	paginationRow := []telego.InlineKeyboardButton{}
+
+	if page > 0 {
+		paginationRow = append(paginationRow, telego.InlineKeyboardButton{
+			Text:         "Previous",
+			CallbackData: consts.PreviousOperationPrefix + strconv.Itoa(page-1),
+		})
+	}
+
+	// more pages left
+	if page*limit+limit < len(repoList) {
+		paginationRow = append(paginationRow, telego.InlineKeyboardButton{
+			Text:         "Next",
+			CallbackData: consts.ForwardOperationPrefix + strconv.Itoa(page+1),
+		})
+	}
+
+	rows = append(rows, paginationRow)
+
+	// back
+
+	backToMenuRow := []telego.InlineKeyboardButton{}
+	backToMenuRow = append(backToMenuRow, telego.InlineKeyboardButton{
+		Text:         "Back to Menu",
+		CallbackData: consts.MenuCallback,
+	})
+
+	rows = append(rows, backToMenuRow)
 
 	replyMarkup := tu.InlineKeyboard(rows...)
 
