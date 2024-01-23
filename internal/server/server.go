@@ -71,6 +71,7 @@ func Start() {
 		BehaviorHandler: behaviorHandler,
 		Logger:          *logger,
 		AwaitingAddRepo: awaitingAddRepo,
+		Limit:           botConf.Limit,
 	}
 
 	if botConf.ResetWebhookUrl != "" {
@@ -108,7 +109,7 @@ func Start() {
 	botHandler.Handle(handler.UnknownOrSent(), th.AnyMessageWithText())
 
 	// Callback queries
-	botHandler.HandleCallbackQuery(handler.SeeAll(), th.CallbackDataEqual(consts.SeeAllCallback))
+	botHandler.HandleCallbackQuery(handler.SeeRepos(botConf.Limit, 0), th.CallbackDataEqual(consts.SeeAllCallback))
 	botHandler.HandleCallbackQuery(handler.Add(), th.CallbackDataEqual(consts.AddCallback))
 	botHandler.HandleCallbackQuery(handler.Menu(), th.CallbackDataEqual(consts.MenuCallback))
 	botHandler.HandleCallbackQuery(handler.AnyCallbackRouter(), th.AnyCallbackQuery())

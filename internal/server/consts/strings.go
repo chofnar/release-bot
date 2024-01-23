@@ -41,5 +41,7 @@ const (
 
 	CheckRepo = "Check it out"
 
-	OperationPrefix = "OP_"
+	FlipOperationPrefix     = "FLOP_"
+	PreviousOperationPrefix = "PRV_"
+	ForwardOperationPrefix  = "FWD_"
 )

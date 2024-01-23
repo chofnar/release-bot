@@ -1,6 +1,7 @@
 package telegohandlers
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/chofnar/release-bot/internal/server/behaviors"
@@ -14,6 +15,7 @@ type Handler struct {
 	BehaviorHandler behaviors.BehaviorHandler
 	Logger          zap.SugaredLogger
 	AwaitingAddRepo map[int64]struct{}
+	Limit           int
 }
 
 type void struct{}
@@ -54,9 +56,9 @@ func (hc *Handler) UnknownOrSent() telegohandler.Handler {
 	}
 }
 
-func (hc *Handler) SeeAll() telegohandler.CallbackQueryHandler {
+func (hc *Handler) SeeRepos(limit, page int) telegohandler.CallbackQueryHandler {
 	return func(bot *telego.Bot, query telego.CallbackQuery) {
-		err := hc.BehaviorHandler.SeeAll(query.Message.Chat.ID, query.Message.MessageID)
+		err := hc.BehaviorHandler.SeeRepos(query.Message.Chat.ID, query.Message.MessageID, limit, page)
 		if err != nil {
 			hc.Logger.Error(err)
 		}
@@ -85,8 +87,30 @@ func (hc *Handler) Add() telegohandler.CallbackQueryHandler {
 
 func (hc *Handler) AnyCallbackRouter() telegohandler.CallbackQueryHandler {
 	return func(bot *telego.Bot, query telego.CallbackQuery) {
-		if strings.HasPrefix(query.Data, consts.OperationPrefix) {
+		if strings.HasPrefix(query.Data, consts.FlipOperationPrefix) {
 			err := hc.BehaviorHandler.FlipPreRelease(query.Message.Chat.ID, query.Message.MessageID, query.Data)
+			if err != nil {
+				hc.Logger.Error(err)
+			}
+		} else if strings.HasPrefix(query.Data, consts.PreviousOperationPrefix) {
+			page, err := strconv.Atoi(strings.TrimPrefix(query.Data, consts.PreviousOperationPrefix))
+			if err != nil {
+				hc.Logger.Error(err)
+				return
+			}
+
+			err = hc.BehaviorHandler.SeeRepos(query.Message.Chat.ID, query.Message.MessageID, hc.Limit, page)
+			if err != nil {
+				hc.Logger.Error(err)
+			}
+		} else if strings.HasPrefix(query.Data, consts.ForwardOperationPrefix) {
+			page, err := strconv.Atoi(strings.TrimPrefix(query.Data, consts.ForwardOperationPrefix))
+			if err != nil {
+				hc.Logger.Error(err)
+				return
+			}
+
+			err = hc.BehaviorHandler.SeeRepos(query.Message.Chat.ID, query.Message.MessageID, hc.Limit, page)
 			if err != nil {
 				hc.Logger.Error(err)
 			}
