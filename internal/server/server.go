@@ -80,7 +80,7 @@ func Start() {
 			webhookPort = ":" + botConf.WebhookPort
 		}
 		url := botConf.WebhookSite + webhookPort + "/bot/" + botConf.TelegramToken
-		logger.Info("resetting webhook url to: " + botConf.WebhookSite + "/bot/TOKEN")
+		logger.Info("resetting webhook url to: " + botConf.WebhookSite + webhookPort + "/bot/TOKEN")
 		err = bot.SetWebhook(&telego.SetWebhookParams{
 			URL: url,
 		})
