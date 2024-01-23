@@ -112,9 +112,16 @@ func SeeReposMarkup(chatID int64, messageID, limit, page int, database *database
 		}
 		currentRow[0] = repoNameButton
 
-		releaseButton := telego.InlineKeyboardButton{
-			Text: repo.CurrentReleaseTagName,
-			URL:  repo.Link + "/releases/" + repo.CurrentReleaseTagName,
+		var releaseButton telego.InlineKeyboardButton
+		if repo.CurrentReleaseTagName != "" {
+			releaseButton = telego.InlineKeyboardButton{
+				Text: repo.CurrentReleaseTagName,
+				URL:  repo.Link + "/releases/" + repo.CurrentReleaseTagName,
+			}
+		} else {
+			releaseButton = telego.InlineKeyboardButton{
+				Text: "N/A",
+			}
 		}
 		currentRow[1] = releaseButton
 
