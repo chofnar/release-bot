@@ -51,4 +51,4 @@ jobs:
               -e SUPER_SECRET_TOKEN=${{ secrets.SUPER_SECRET_TOKEN }} \
               -e LIMIT=${{ secrets.LIMIT }} \
               -e RESET_WEBHOOK_URL=${{ secrets.RESET_WEBHOOK_URL }} \
-              go-release-bot:${{ github.sha }}
+              chofnar/go-release-bot:${{ github.sha }}
