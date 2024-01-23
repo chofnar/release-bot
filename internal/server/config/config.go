@@ -24,7 +24,7 @@ func LoadBotConfig() *BotConfig {
 			TelegramToken:   os.Getenv("TELEGRAM_BOT_TOKEN"),
 			WebhookSite:     os.Getenv("TELEGRAM_BOT_SITE_URL"),
 			Port:            os.Getenv("PORT"),
-			GithubGQLToken:  os.Getenv("GITHUB_GQL_TOKEN"),
+			GithubGQLToken:  os.Getenv("GRAPHQL_TOKEN"),
 			ResetWebhookUrl: os.Getenv("RESET_WEBHOOK_URL"),
 			Limit:           limit,
 		}
