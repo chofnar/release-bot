@@ -75,8 +75,12 @@ func Start() {
 	}
 
 	if botConf.ResetWebhookUrl != "" {
-		url := botConf.WebhookSite + "/bot/" + botConf.TelegramToken
-		logger.Info("resetting webhook url to: " + botConf.WebhookSite + "/bot/TOKEN")
+		var webhookPort string
+		if botConf.WebhookPort != "" {
+			webhookPort = ":" + botConf.WebhookPort
+		}
+		url := botConf.WebhookSite + webhookPort + "/bot/" + botConf.TelegramToken
+		logger.Info("resetting webhook url to: " + botConf.WebhookSite + webhookPort + "/bot/TOKEN")
 		err = bot.SetWebhook(&telego.SetWebhookParams{
 			URL: url,
 		})
