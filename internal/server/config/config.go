@@ -6,8 +6,8 @@ import (
 )
 
 type BotConfig struct {
-	TelegramToken, WebhookSite, Port, GithubGQLToken, ResetWebhookUrl string
-	Limit                                                             int
+	TelegramToken, WebhookSite, WebhookPort, Port, GithubGQLToken, ResetWebhookUrl string
+	Limit                                                                          int
 }
 
 func LoadBotConfig() *BotConfig {
@@ -24,6 +24,7 @@ func LoadBotConfig() *BotConfig {
 			TelegramToken:   os.Getenv("TELEGRAM_BOT_TOKEN"),
 			WebhookSite:     os.Getenv("TELEGRAM_BOT_SITE_URL"),
 			Port:            os.Getenv("PORT"),
+			WebhookPort:     os.Getenv("WEBHOOK_PORT"),
 			GithubGQLToken:  os.Getenv("GRAPHQL_TOKEN"),
 			ResetWebhookUrl: os.Getenv("RESET_WEBHOOK_URL"),
 			Limit:           limit,
