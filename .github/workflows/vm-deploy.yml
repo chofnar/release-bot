@@ -38,9 +38,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             sudo docker pull chofnar/go-release-bot:${{ github.sha }}
-            sudo docker stop release-bot || true
-            sudo docker rm release-bot || true
-            sudo docker run -d --name release-bot -p 8443:8443 \
+            sudo docker stop go-release-bot || true
+            sudo docker rm go-release-bot || true
+            sudo docker run -d --name go-release-bot -p 8443:8443 \
               -e TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} \
               -e TELEGRAM_BOT_SITE_URL=${{ secrets.TELEGRAM_BOT_SITE_URL }} \
               -e BOT_DYNAMODB_ENDPOINT=${{ secrets.BOT_DYNAMODB_ENDPOINT }} \
