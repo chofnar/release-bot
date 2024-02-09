@@ -60,4 +60,5 @@ jobs:
               -e WEBHOOK_PORT=${{ secrets.WEBHOOK_PORT }} \
               -e PORT=${{ secrets.PORT }} \
               -e BOT_TABLE_NAME=${{ secrets.BOT_TABLE_NAME }} \
+              --network traefik_network \
               chofnar/go-release-bot:${{ github.sha }}
