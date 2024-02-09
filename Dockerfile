@@ -9,8 +9,8 @@ COPY . ./
 
 RUN go build -mod=readonly -v -o bot
 
-FROM arm64v8/debian:buster-slim
-RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+FROM arm64v8/debian:latest
+RUN set -x && apt-get update && apt-get upgrade -y && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
