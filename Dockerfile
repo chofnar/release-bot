@@ -1,4 +1,4 @@
-FROM golang:1.21.6-bullseye as builder
+FROM arm64v8/golang:1.22.0-bullseye as builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ COPY . ./
 
 RUN go build -mod=readonly -v -o bot
 
-FROM debian:buster-slim
+FROM arm64v8/debian:buster-slim
 RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     ca-certificates && \
     rm -rf /var/lib/apt/lists/*
