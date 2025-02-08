@@ -1,4 +1,4 @@
-FROM arm64v8/golang:1.22.0-bullseye as builder
+FROM arm64v8/golang:1.23.6-bullseye as builder
 
 WORKDIR /app
 
