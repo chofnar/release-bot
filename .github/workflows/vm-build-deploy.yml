@@ -1,9 +1,6 @@
 name: Build and deploy to VM
 
 on:
-  push:
-    branches:
-      - prod
   workflow_dispatch:
 
 jobs:

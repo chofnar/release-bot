@@ -1,9 +1,6 @@
 name: Deploy to VM
 
 on:
-  push:
-    branches:
-      - prod
   workflow_dispatch:
 
 jobs:
