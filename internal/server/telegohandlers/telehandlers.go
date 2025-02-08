@@ -58,7 +58,9 @@ func (hc *Handler) UnknownOrSent() telegohandler.Handler {
 
 func (hc *Handler) SeeRepos(limit, page int) telegohandler.CallbackQueryHandler {
 	return func(bot *telego.Bot, query telego.CallbackQuery) {
-		err := hc.BehaviorHandler.SeeRepos(query.Message.Chat.ID, query.Message.MessageID, limit, page)
+		messageChatId := query.Message.GetChat().ID
+		messageId := query.Message.GetMessageID()
+		err := hc.BehaviorHandler.SeeRepos(messageChatId, messageId, limit, page)
 		if err != nil {
 			hc.Logger.Error(err)
 		}
@@ -67,28 +69,34 @@ func (hc *Handler) SeeRepos(limit, page int) telegohandler.CallbackQueryHandler 
 
 func (hc *Handler) Menu() telegohandler.CallbackQueryHandler {
 	return func(bot *telego.Bot, query telego.CallbackQuery) {
-		err := hc.BehaviorHandler.Menu(query.Message.Chat.ID, query.Message.MessageID)
+		messageChatId := query.Message.GetChat().ID
+		messageId := query.Message.GetMessageID()
+		err := hc.BehaviorHandler.Menu(messageChatId, messageId)
 		if err != nil {
 			hc.Logger.Error(err)
 		}
-		delete(hc.AwaitingAddRepo, query.Message.Chat.ID)
+		delete(hc.AwaitingAddRepo, messageChatId)
 	}
 }
 
 func (hc *Handler) Add() telegohandler.CallbackQueryHandler {
 	return func(bot *telego.Bot, query telego.CallbackQuery) {
-		err := hc.BehaviorHandler.Add(query.Message.Chat.ID, query.Message.MessageID)
+		messageChatId := query.Message.GetChat().ID
+		messageId := query.Message.GetMessageID()
+		err := hc.BehaviorHandler.Add(messageChatId, messageId)
 		if err != nil {
 			hc.Logger.Error(err)
 		}
-		hc.AwaitingAddRepo[query.Message.Chat.ID] = set
+		hc.AwaitingAddRepo[messageChatId] = set
 	}
 }
 
 func (hc *Handler) AnyCallbackRouter() telegohandler.CallbackQueryHandler {
 	return func(bot *telego.Bot, query telego.CallbackQuery) {
+		messageChatId := query.Message.GetChat().ID
+		messageId := query.Message.GetMessageID()
 		if strings.HasPrefix(query.Data, consts.FlipOperationPrefix) {
-			err := hc.BehaviorHandler.FlipPreRelease(query.Message.Chat.ID, query.Message.MessageID, query.Data)
+			err := hc.BehaviorHandler.FlipPreRelease(messageChatId, messageId, query.Data)
 			if err != nil {
 				hc.Logger.Error(err)
 			}
@@ -99,7 +107,7 @@ func (hc *Handler) AnyCallbackRouter() telegohandler.CallbackQueryHandler {
 				return
 			}
 
-			err = hc.BehaviorHandler.SeeRepos(query.Message.Chat.ID, query.Message.MessageID, hc.Limit, page)
+			err = hc.BehaviorHandler.SeeRepos(messageChatId, messageId, hc.Limit, page)
 			if err != nil {
 				hc.Logger.Error(err)
 			}
@@ -110,12 +118,12 @@ func (hc *Handler) AnyCallbackRouter() telegohandler.CallbackQueryHandler {
 				return
 			}
 
-			err = hc.BehaviorHandler.SeeRepos(query.Message.Chat.ID, query.Message.MessageID, hc.Limit, page)
+			err = hc.BehaviorHandler.SeeRepos(messageChatId, messageId, hc.Limit, page)
 			if err != nil {
 				hc.Logger.Error(err)
 			}
 		} else {
-			err := hc.BehaviorHandler.DeleteRepo(query.Message.Chat.ID, query.Message.MessageID, query.Data)
+			err := hc.BehaviorHandler.DeleteRepo(messageChatId, messageId, query.Data)
 			if err != nil {
 				hc.Logger.Error(err)
 			}
